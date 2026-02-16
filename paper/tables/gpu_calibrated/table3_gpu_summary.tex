@@ -1,0 +1,31 @@
+\begin{table}[t]
+\centering
+\caption{GPU kernel speedup over CPU numpy (Tesla T4)}
+\label{tab:gpu_summary}
+\begin{tabular}{lccc}
+\toprule
+Compressor & Operation & Mean Speedup & Range \\
+\midrule
+  uniform\_int8 & Compress & 34$\times$ & [27$\times$, 41$\times$] \\
+  uniform\_int8 & Decompress & 80$\times$ & [60$\times$, 100$\times$] \\
+\midrule
+  kivi\_2bit & Compress & 53$\times$ & [38$\times$, 58$\times$] \\
+  kivi\_2bit & Decompress & 68$\times$ & [43$\times$, 78$\times$] \\
+\midrule
+  uniform\_int4 & Compress & 63$\times$ & [54$\times$, 74$\times$] \\
+  uniform\_int4 & Decompress & 62$\times$ & [48$\times$, 68$\times$] \\
+\midrule
+  fp8\_e4m3 & Compress & 36$\times$ & [25$\times$, 47$\times$] \\
+  fp8\_e4m3 & Decompress & 64$\times$ & [45$\times$, 92$\times$] \\
+\midrule
+  cachegen & Compress & 33$\times$ & [16$\times$, 42$\times$] \\
+  cachegen & Decompress & 56$\times$ & [34$\times$, 67$\times$] \\
+\midrule
+  cascade\_prune50\_int4 & Compress & 60$\times$ & [38$\times$, 85$\times$] \\
+  cascade\_prune50\_int4 & Decompress & 48$\times$ & [29$\times$, 60$\times$] \\
+\midrule
+  palu\_lr & Compress & 5$\times$ & [2$\times$, 11$\times$] \\
+  palu\_lr & Decompress & 216$\times$ & [149$\times$, 288$\times$] \\
+\bottomrule
+\end{tabular}
+\end{table}

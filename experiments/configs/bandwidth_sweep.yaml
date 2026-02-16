@@ -1,0 +1,49 @@
+# Bandwidth sweep: find crossover points
+experiment:
+  name: bandwidth_sweep
+  description: "Find bandwidth break-even points for each compression strategy"
+
+models:
+  - llama-3.1-8b
+
+compressors:
+  - identity
+  - fp8_e4m3
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 1
+  - 2
+  - 5
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  - 40
+  - 50
+  - 75
+  - 100
+  - 150
+  - 200
+  - 300
+  - 400
+
+prompts:
+  source: synthetic
+  count: 20
+  min_tokens: 256
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: false
+  generation: false
+
+output:
+  dir: experiments/results/bandwidth_sweep
+  save_per_layer: false

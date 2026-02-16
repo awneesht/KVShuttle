@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Maximum beneficial bandwidth (highest Gbps where speedup $> 1$)}
+\label{tab:breakeven_gpu}
+\begin{tabular}{lccc}
+\toprule
+Strategy & CPU Seq. & GPU Seq. & GPU Pipelined \\
+\midrule
+  cachegen & $\leq$1 & $\leq$10 & $\leq$25 \\
+  cascade\_prune50\_int4 & N/A & $\leq$50 & $\leq$100 \\
+  fp8\_e4m3 & --- & $\leq$10 & $\leq$50 \\
+  kivi\_2bit & $\leq$1 & $\leq$25 & $\leq$50 \\
+  palu\_lr & N/A & N/A & N/A \\
+  uniform\_int4 & N/A & $\leq$25 & $\leq$50 \\
+  uniform\_int8 & $\leq$1 & $\leq$25 & $\leq$50 \\
+\bottomrule
+\end{tabular}
+\end{table}

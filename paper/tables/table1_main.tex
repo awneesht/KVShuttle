@@ -1,0 +1,25 @@
+\begin{table}[t]
+\centering
+\caption{Compression strategies: ratio, quality, and throughput}
+\label{tab:main}
+\begin{tabular}{lccccc}
+\toprule
+Strategy & Ratio & Key $\cos$ & Val $\cos$ & Comp. (ms) & Decomp. (ms) \\
+\midrule
+  cachegen & 3.6x & 0.9925 & 0.9858 & 111.54 & 44.33 \\
+  cascade\_prune50\_int4 & 7.1x & 0.7602 & 0.6933 & 198.43 & 46.86 \\
+  fp8\_e4m3 & 2.0x & 0.9926 & 0.9987 & 13.68 & 7.84 \\
+  identity & 1.0x & 1.0000 & 1.0000 & 1.15 & 1.12 \\
+  kivi\_2bit & 6.7x & 0.9587 & 0.8692 & 25.11 & 13.24 \\
+  kvquant\_2bit & 7.6x & 0.6471 & 0.6554 & 56.42 & 65.06 \\
+  lossless\_lz4 & 1.0x & 1.0000 & 1.0000 & 7.50 & 2.22 \\
+  lossless\_zstd & 1.1x & 1.0000 & 1.0000 & 25.55 & 19.61 \\
+  mixed\_k8v4 & 2.6x & 0.9998 & 0.9935 & 199.86 & 49.04 \\
+  palu\_int4 & 9.0x & 0.9581 & 0.9460 & 1110.94 & 41.83 \\
+  palu\_lr & 2.5x & 0.9756 & 0.9611 & 958.05 & 6.43 \\
+  topk\_prune\_50 & 2.0x & 0.7701 & 0.6979 & 4.12 & 1.65 \\
+  uniform\_int4 & 3.6x & 0.9874 & 0.9935 & 385.46 & 91.40 \\
+  uniform\_int8 & 2.0x & 0.9998 & 0.9998 & 12.57 & 6.53 \\
+\bottomrule
+\end{tabular}
+\end{table}

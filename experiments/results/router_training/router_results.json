@@ -1,0 +1,177 @@
+{
+  "qt_0.99": {
+    "quality_threshold": 0.99,
+    "num_samples": 1000,
+    "train_size": 800,
+    "test_size": 200,
+    "label_distribution": {
+      "uniform_int8": 250,
+      "identity": 750
+    },
+    "models": {
+      "decision_tree": {
+        "train_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "feature_importances": {
+          "log2_bandwidth": 1.0
+        },
+        "tree_depth": 1,
+        "n_leaves": 2
+      },
+      "gradient_boosting": {
+        "train_accuracy": 1.0,
+        "test_accuracy": 1.0
+      },
+      "mlp": {
+        "train_accuracy": 0.75,
+        "test_accuracy": 0.75
+      }
+    },
+    "oracle_by_bandwidth": {
+      "1.0": {
+        "picks": {
+          "uniform_int8": 200
+        },
+        "avg_total_ms": 120.81476461999999,
+        "avg_speedup": 1.699407349264572
+      },
+      "5.0": {
+        "picks": {
+          "uniform_int8": 50
+        },
+        "avg_total_ms": 42.69688314000001,
+        "avg_speedup": 1.0805957587744706
+      },
+      "10.0": {
+        "picks": {
+          "identity": 200
+        },
+        "avg_total_ms": 23.646072705,
+        "avg_speedup": 0.8715412682058628
+      },
+      "25.0": {
+        "picks": {
+          "identity": 50
+        },
+        "avg_total_ms": 12.557832980000002,
+        "avg_speedup": 0.7349282358322359
+      },
+      "50.0": {
+        "picks": {
+          "identity": 200
+        },
+        "avg_total_ms": 7.156041328,
+        "avg_speedup": 0.5794846980854609
+      },
+      "100.0": {
+        "picks": {
+          "identity": 200
+        },
+        "avg_total_ms": 5.058667359,
+        "avg_speedup": 0.4108636108361729
+      },
+      "200.0": {
+        "picks": {
+          "identity": 50
+        },
+        "avg_total_ms": 4.5219939799999995,
+        "avg_speedup": 0.2556476030679473
+      },
+      "400.0": {
+        "picks": {
+          "identity": 50
+        },
+        "avg_total_ms": 3.91974242,
+        "avg_speedup": 0.14757688143369135
+      }
+    }
+  },
+  "qt_0.95": {
+    "quality_threshold": 0.95,
+    "num_samples": 1000,
+    "train_size": 800,
+    "test_size": 200,
+    "label_distribution": {
+      "kivi_2bit": 200,
+      "uniform_int8": 50,
+      "identity": 750
+    },
+    "models": {
+      "decision_tree": {
+        "train_accuracy": 1.0,
+        "test_accuracy": 1.0,
+        "feature_importances": {
+          "log2_bandwidth": 1.0
+        },
+        "tree_depth": 2,
+        "n_leaves": 3
+      },
+      "gradient_boosting": {
+        "train_accuracy": 1.0,
+        "test_accuracy": 1.0
+      },
+      "mlp": {
+        "train_accuracy": 0.75,
+        "test_accuracy": 0.75
+      }
+    },
+    "oracle_by_bandwidth": {
+      "1.0": {
+        "picks": {
+          "kivi_2bit": 200
+        },
+        "avg_total_ms": 66.42295471,
+        "avg_speedup": 3.1356149167953835
+      },
+      "5.0": {
+        "picks": {
+          "uniform_int8": 50
+        },
+        "avg_total_ms": 42.69688314000001,
+        "avg_speedup": 1.0805957587744706
+      },
+      "10.0": {
+        "picks": {
+          "identity": 200
+        },
+        "avg_total_ms": 23.646072705,
+        "avg_speedup": 0.8715412682058628
+      },
+      "25.0": {
+        "picks": {
+          "identity": 50
+        },
+        "avg_total_ms": 12.557832980000002,
+        "avg_speedup": 0.7349282358322359
+      },
+      "50.0": {
+        "picks": {
+          "identity": 200
+        },
+        "avg_total_ms": 7.156041328,
+        "avg_speedup": 0.5794846980854609
+      },
+      "100.0": {
+        "picks": {
+          "identity": 200
+        },
+        "avg_total_ms": 5.058667359,
+        "avg_speedup": 0.4108636108361729
+      },
+      "200.0": {
+        "picks": {
+          "identity": 50
+        },
+        "avg_total_ms": 4.5219939799999995,
+        "avg_speedup": 0.2556476030679473
+      },
+      "400.0": {
+        "picks": {
+          "identity": 50
+        },
+        "avg_total_ms": 3.91974242,
+        "avg_speedup": 0.14757688143369135
+      }
+    }
+  }
+}

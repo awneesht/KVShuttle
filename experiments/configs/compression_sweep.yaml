@@ -1,0 +1,48 @@
+# Full compression sweep: all strategies on one model
+experiment:
+  name: compression_sweep
+  description: "All compression strategies on Llama-3.1-8B"
+
+models:
+  - llama-3.1-8b
+
+compressors:
+  - identity
+  - lossless_zstd
+  - lossless_lz4
+  - fp8_e4m3
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - kvquant_2bit
+  - palu_lr
+  - topk_prune_50
+  - cascade_prune50_int4
+  - palu_int4
+  - mixed_k8v4
+
+bandwidths_gbps:
+  - 1
+  - 5
+  - 10
+  - 25
+  - 50
+  - 100
+  - 200
+  - 400
+
+prompts:
+  source: synthetic
+  count: 50
+  min_tokens: 128
+  max_tokens: 1024
+
+evaluation:
+  attention_error: true
+  perplexity: false
+  generation: false
+
+output:
+  dir: experiments/results/compression_sweep
+  save_per_layer: true

@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering
+\caption{Compression strategies with GPU-calibrated timing (Tesla T4)}
+\label{tab:main_gpu}
+\begin{tabular}{lccccccccc}
+\toprule
+Strategy & Ratio & Key $\cos$ & Val $\cos$ & \multicolumn{2}{c}{CPU (ms)} & \multicolumn{2}{c}{GPU (ms)} & \multicolumn{2}{c}{Speedup} \\
+\cmidrule(lr){5-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10}
+ & & & & Comp. & Decomp. & Comp. & Decomp. & Comp. & Decomp. \\
+\midrule
+  cachegen & 3.5x & 0.9927 & 0.9854 & 110.1 & 42.4 & 3.36 & 0.76 & 33$\times$ & 56$\times$ \\
+  cascade\_prune50\_int4 & 7.1x & 0.7370 & 0.7021 & 169.7 & 40.8 & 2.81 & 0.85 & 60$\times$ & 48$\times$ \\
+  identity & 1.0x & 1.0000 & 1.0000 & 1.2 & 1.1 & --- & --- & --- & --- \\
+  kivi\_2bit & 6.5x & 0.9649 & 0.8706 & 22.4 & 11.7 & 0.42 & 0.17 & 53$\times$ & 68$\times$ \\
+  palu\_lr & 2.4x & 0.9829 & 0.9778 & 853.9 & 6.4 & 185.39 & 0.03 & 5$\times$ & 216$\times$ \\
+  uniform\_int4 & 3.6x & 0.9872 & 0.9934 & 333.1 & 79.8 & 5.28 & 1.29 & 63$\times$ & 62$\times$ \\
+  uniform\_int8 & 2.0x & 0.9998 & 0.9998 & 11.3 & 5.8 & 0.33 & 0.07 & 34$\times$ & 80$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

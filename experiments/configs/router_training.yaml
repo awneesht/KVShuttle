@@ -1,0 +1,44 @@
+# Router training: generate training data and train router
+experiment:
+  name: router_training
+  description: "Generate routing dataset and train KVShuttle Router"
+
+models:
+  - qwen2.5-3b
+  - llama-3.2-3b
+  - llama-3.1-8b
+
+compressors:
+  - identity
+  - fp8_e4m3
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 1
+  - 5
+  - 10
+  - 25
+  - 50
+  - 100
+  - 200
+
+prompts:
+  source: synthetic
+  count: 200
+  min_tokens: 64
+  max_tokens: 2048
+
+router:
+  quality_threshold: 0.99  # minimum cosine similarity
+  train_split: 0.8
+  models:
+    - decision_tree
+    - mlp
+
+output:
+  dir: experiments/results/router_training
+  save_per_layer: false

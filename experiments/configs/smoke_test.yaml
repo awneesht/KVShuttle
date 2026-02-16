@@ -1,0 +1,32 @@
+# Smoke test: 1 model, 3 strategies, 10 prompts (~5 min)
+experiment:
+  name: smoke_test
+  description: "Quick validation that pipeline works end-to-end"
+
+models:
+  - qwen2.5-3b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+
+bandwidths_gbps:
+  - 1
+  - 10
+  - 100
+
+prompts:
+  source: synthetic  # or "gsm8k", "wikitext"
+  count: 10
+  min_tokens: 64
+  max_tokens: 256
+
+evaluation:
+  attention_error: true
+  perplexity: false
+  generation: false
+
+output:
+  dir: experiments/results/smoke_test
+  save_per_layer: false

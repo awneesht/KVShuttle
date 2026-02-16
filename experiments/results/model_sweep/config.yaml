@@ -1,0 +1,35 @@
+bandwidths_gbps:
+- 1
+- 10
+- 50
+- 100
+compressors:
+- identity
+- uniform_int8
+- uniform_int4
+- kivi_2bit
+- cachegen
+- palu_lr
+- cascade_prune50_int4
+evaluation:
+  attention_error: true
+  generation: false
+  perplexity: false
+experiment:
+  description: Compare GQA vs MHA across model architectures
+  name: model_sweep
+models:
+- qwen2.5-3b
+- llama-3.2-3b
+- phi-3.5-mini
+- qwen2.5-7b
+- llama-3.1-8b
+- mistral-7b
+output:
+  dir: experiments/results/model_sweep
+  save_per_layer: true
+prompts:
+  count: 30
+  max_tokens: 512
+  min_tokens: 128
+  source: synthetic

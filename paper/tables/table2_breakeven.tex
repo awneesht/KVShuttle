@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering
+\caption{Bandwidth break-even points (lowest Gbps where speedup $> 1$)}
+\label{tab:breakeven}
+\begin{tabular}{lc}
+\toprule
+Strategy & Break-even (Gbps) \\
+\midrule
+  cachegen & 1 \\
+  cascade\_prune50\_int4 & N/A \\
+  fp8\_e4m3 & 1 \\
+  kivi\_2bit & 1 \\
+  kvquant\_2bit & 1 \\
+  lossless\_lz4 & N/A \\
+  lossless\_zstd & N/A \\
+  mixed\_k8v4 & N/A \\
+  palu\_int4 & N/A \\
+  palu\_lr & N/A \\
+  topk\_prune\_50 & 1 \\
+  uniform\_int4 & N/A \\
+  uniform\_int8 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}

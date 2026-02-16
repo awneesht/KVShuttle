@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Compression strategies: ratio, quality, and throughput}
+\label{tab:main}
+\begin{tabular}{lccccc}
+\toprule
+Strategy & Ratio & Key $\cos$ & Val $\cos$ & Comp. (ms) & Decomp. (ms) \\
+\midrule
+  cachegen & 3.5x & 0.9927 & 0.9854 & 110.15 & 42.41 \\
+  cascade\_prune50\_int4 & 7.1x & 0.7370 & 0.7021 & 169.69 & 40.80 \\
+  identity & 1.0x & 1.0000 & 1.0000 & 1.15 & 1.06 \\
+  kivi\_2bit & 6.5x & 0.9649 & 0.8706 & 22.35 & 11.66 \\
+  palu\_lr & 2.4x & 0.9829 & 0.9778 & 853.94 & 6.39 \\
+  uniform\_int4 & 3.6x & 0.9872 & 0.9934 & 333.13 & 79.85 \\
+  uniform\_int8 & 2.0x & 0.9998 & 0.9998 & 11.27 & 5.83 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,42 @@
+# Model sweep: key strategies across all models
+experiment:
+  name: model_sweep
+  description: "Compare GQA vs MHA across model architectures"
+
+models:
+  - qwen2.5-3b
+  - llama-3.2-3b
+  - phi-3.5-mini
+  - qwen2.5-7b
+  - llama-3.1-8b
+  - mistral-7b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - palu_lr
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 1
+  - 10
+  - 50
+  - 100
+
+prompts:
+  source: synthetic
+  count: 30
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: false
+  generation: false
+
+output:
+  dir: experiments/results/model_sweep
+  save_per_layer: true

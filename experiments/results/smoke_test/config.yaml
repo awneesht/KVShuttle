@@ -1,0 +1,25 @@
+bandwidths_gbps:
+- 1
+- 10
+- 100
+compressors:
+- identity
+- uniform_int8
+- uniform_int4
+evaluation:
+  attention_error: true
+  generation: false
+  perplexity: false
+experiment:
+  description: Quick validation that pipeline works end-to-end
+  name: smoke_test
+models:
+- qwen2.5-3b
+output:
+  dir: experiments/results/smoke_test
+  save_per_layer: false
+prompts:
+  count: 10
+  max_tokens: 256
+  min_tokens: 64
+  source: synthetic

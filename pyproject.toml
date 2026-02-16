@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kvshuttle"
+version = "0.1.0"
+description = "Benchmark and decision framework for KV cache transfer compression in disaggregated LLM serving"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "Awneesh Verma"}]
+dependencies = [
+    "mlx>=0.22.0",
+    "mlx-lm>=0.21.0",
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "scikit-learn>=1.4",
+    "pyyaml>=6.0",
+    "tqdm>=4.66",
+    "matplotlib>=3.8",
+    "seaborn>=0.13",
+    "zstandard>=0.22",
+    "lz4>=4.3",
+    "rouge-score>=0.1.2",
+    "datasets>=2.18",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-timeout>=2.2",
+    "ruff>=0.3",
+]
+
+[tool.setuptools.packages.find]
+include = ["kvshuttle*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests that require model downloads or long computation",
+]
