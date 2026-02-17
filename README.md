@@ -18,6 +18,8 @@ KVShuttle evaluates 14+ compression strategies across multiple models and sequen
 
 *GPU speedups (compress-decompress) over CPU numpy, measured with CUDA Event timing (zero-copy). T4 = Tesla T4 (320 GB/s), A100 = A100-SXM4-40GB (2039 GB/s). Token agreement = greedy decode match rate with original KV cache (3 models, 10 WikiText prompts).*
 
+**Cosine similarity is a poor predictor of generation quality.** Uniform INT4 achieves 0.99 key cosine similarity yet produces a perplexity delta of ~1,760 — nearly as bad as cascade_prune50_int4 (cosine sim 0.74, ppl delta ~1,930). Small per-element quantization errors compound through multi-head attention layers, so high KV cache fidelity does not guarantee faithful generation. End-to-end metrics like perplexity delta and token agreement are essential for evaluating compression schemes.
+
 ## Features
 
 - **14+ compressors** — identity, uniform INT8/INT4, FP8, KIVI 2-bit, CacheGen, KVQuant, Palu (SVD), token pruning, cascade (prune+quantize), lossless (zstd/lz4), hybrid strategies
