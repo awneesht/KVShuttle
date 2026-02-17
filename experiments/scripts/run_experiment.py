@@ -315,6 +315,9 @@ def _tokenize_prompt(tokenizer, prompt: str) -> list[int]:
         result = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=True
         )
+        # Newer transformers may return dict {"input_ids": [...], ...}
+        if isinstance(result, dict):
+            result = result["input_ids"]
         if isinstance(result, str):
             return tokenizer.encode(result)
         return [int(x) for x in result]

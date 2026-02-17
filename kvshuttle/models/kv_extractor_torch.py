@@ -77,16 +77,17 @@ def _tokenize_prompt(tokenizer, prompt: str) -> list[int]:
     """Tokenize a prompt with chat template, returning a plain list of ints.
 
     Handles all transformers versions: apply_chat_template may return
-    List[int], str, or tensor depending on version and tokenize= default.
+    List[int], str, dict, or tensor depending on version and tokenizer.
     """
     if hasattr(tokenizer, "apply_chat_template"):
         messages = [{"role": "user", "content": prompt}]
-        # Force tokenize=True to get token IDs
         result = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=True
         )
+        # Newer transformers may return dict {"input_ids": [...], ...}
+        if isinstance(result, dict):
+            result = result["input_ids"]
         if isinstance(result, str):
-            # Some versions return str even with tokenize=True
             return tokenizer.encode(result)
         # Ensure plain Python ints (not numpy/torch types)
         return [int(x) for x in result]
