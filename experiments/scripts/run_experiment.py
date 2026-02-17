@@ -174,15 +174,7 @@ def run_experiment(config_path: str) -> None:
                         from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
 
                     # Tokenize with chat template (matching what extract_kv_cache used)
-                    if hasattr(tokenizer, "apply_chat_template"):
-                        messages = [{"role": "user", "content": prompt_text}]
-                        text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
-                        if isinstance(text, str):
-                            all_token_ids = tokenizer.encode(text)
-                        else:
-                            all_token_ids = list(text)
-                    else:
-                        all_token_ids = tokenizer.encode(prompt_text)
+                    all_token_ids = _tokenize_prompt(tokenizer, prompt_text)
 
                     # Split at 80%: prefix KV + continuation tokens
                     total_len = len(all_token_ids)
@@ -314,6 +306,19 @@ _MODEL_KV_SHAPES = {
     "llama-3.1-8b": (32, 8, 128),
     "mistral-7b": (32, 8, 128),
 }
+
+
+def _tokenize_prompt(tokenizer, prompt: str) -> list[int]:
+    """Tokenize a prompt with chat template, returning a plain list of ints."""
+    if hasattr(tokenizer, "apply_chat_template"):
+        messages = [{"role": "user", "content": prompt}]
+        result = tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=True
+        )
+        if isinstance(result, str):
+            return tokenizer.encode(result)
+        return [int(x) for x in result]
+    return tokenizer.encode(prompt)
 
 
 def _get_synthetic_kv(model_name: str, seq_len: int) -> tuple[np.ndarray, np.ndarray]:

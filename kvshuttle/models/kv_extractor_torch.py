@@ -24,15 +24,7 @@ def extract_kv_cache_torch(model, tokenizer, prompt: str) -> ExtractedKVCache:
         ExtractedKVCache with numpy float16 arrays.
     """
     # Tokenize with chat template (matching MLX version)
-    if hasattr(tokenizer, "apply_chat_template"):
-        messages = [{"role": "user", "content": prompt}]
-        text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
-        if isinstance(text, str):
-            input_ids = tokenizer.encode(text)
-        else:
-            input_ids = list(text)
-    else:
-        input_ids = tokenizer.encode(prompt)
+    input_ids = _tokenize_prompt(tokenizer, prompt)
 
     # Determine device from model parameters
     device = next(model.parameters()).device
@@ -79,3 +71,23 @@ def extract_kv_cache_torch(model, tokenizer, prompt: str) -> ExtractedKVCache:
         prompt=prompt,
         prompt_tokens=seq_len,
     )
+
+
+def _tokenize_prompt(tokenizer, prompt: str) -> list[int]:
+    """Tokenize a prompt with chat template, returning a plain list of ints.
+
+    Handles all transformers versions: apply_chat_template may return
+    List[int], str, or tensor depending on version and tokenize= default.
+    """
+    if hasattr(tokenizer, "apply_chat_template"):
+        messages = [{"role": "user", "content": prompt}]
+        # Force tokenize=True to get token IDs
+        result = tokenizer.apply_chat_template(
+            messages, add_generation_prompt=True, tokenize=True
+        )
+        if isinstance(result, str):
+            # Some versions return str even with tokenize=True
+            return tokenizer.encode(result)
+        # Ensure plain Python ints (not numpy/torch types)
+        return [int(x) for x in result]
+    return tokenizer.encode(prompt)
