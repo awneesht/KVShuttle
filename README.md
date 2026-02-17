@@ -6,17 +6,17 @@ KVShuttle evaluates 14+ compression strategies across multiple models and sequen
 
 ## Key Results
 
-| Strategy | Ratio | Key cos | Val cos | GPU Comp. | GPU Decomp. | Speedup |
-|---|---|---|---|---|---|---|
-| uniform_int8 | 2.0x | 0.9998 | 0.9998 | 0.33 ms | 0.07 ms | 34-80x |
-| kivi_2bit | 6.5x | 0.9649 | 0.8706 | 0.42 ms | 0.17 ms | 53-68x |
-| uniform_int4 | 3.6x | 0.9872 | 0.9934 | 5.28 ms | 1.29 ms | 62-63x |
-| fp8_e4m3 | — | — | — | — | — | 36-64x |
-| cachegen | 3.5x | 0.9927 | 0.9854 | 3.36 ms | 0.76 ms | 33-56x |
-| cascade_prune50_int4 | 7.1x | 0.7370 | 0.7021 | 2.81 ms | 0.85 ms | 48-60x |
-| palu_lr | 2.4x | 0.9829 | 0.9778 | 185 ms | 0.03 ms | 5-216x |
+| Strategy | Ratio | Key cos | Val cos | T4 Speedup | A100 Speedup |
+|---|---|---|---|---|---|
+| uniform_int8 | 2.0x | 0.9998 | 0.9998 | 34-80x | 190-456x |
+| kivi_2bit | 6.5x | 0.9649 | 0.8706 | 53-68x | 284-373x |
+| uniform_int4 | 3.6x | 0.9872 | 0.9934 | 62-63x | 334-311x |
+| fp8_e4m3 | 2.0x | — | — | 36-64x | 355-456x |
+| cachegen | 3.5x | 0.9927 | 0.9854 | 33-56x | 106-275x |
+| cascade_prune50_int4 | 7.1x | 0.7370 | 0.7021 | 48-60x | 276-223x |
+| palu_lr | 2.4x | 0.9829 | 0.9778 | 5-216x | 8-848x |
 
-*GPU timings measured on Tesla T4 with CUDA Event timing (zero-copy, no CPU round-trips).*
+*GPU speedups (compress-decompress) over CPU numpy, measured with CUDA Event timing (zero-copy). T4 = Tesla T4 (320 GB/s), A100 = A100-SXM4-40GB (2039 GB/s).*
 
 ## Features
 
@@ -97,23 +97,21 @@ This uses WikiText-103 prompts instead of synthetic data, and evaluates perplexi
 
 ### GPU calibration
 
-Open `experiments/notebooks/gpu_calibration.ipynb` in Google Colab (T4 runtime), run all cells, and download `gpu_calibration_results.json`. The notebook auto-detects GPU properties (compute capability, SM count, memory bandwidth) for multi-GPU comparison.
+Open `experiments/notebooks/gpu_calibration.ipynb` in Google Colab, select your GPU runtime (T4, A100, or H100), and run all cells. The notebook auto-detects GPU tier and adapts configuration (sequence lengths, model configs, bandwidth test range, repeat count). Results are saved as `gpu_calibration_results_{gpu_tier}.json` (e.g., `gpu_calibration_results_a100.json`).
 
 ### Generate paper assets
 
 ```bash
+# Single GPU (T4 baseline)
 python experiments/scripts/integrate_gpu_calibration.py \
     experiments/results/model_sweep/results.json \
-    experiments/notebooks/gpu_calibration_results.json
-```
+    experiments/notebooks/gpu_calibration_results_t4.json
 
-For multi-GPU comparison (if you have calibration data from additional GPUs):
-
-```bash
+# Multi-GPU comparison (T4 + A100)
 python experiments/scripts/integrate_gpu_calibration.py \
     experiments/results/model_sweep/results.json \
-    experiments/notebooks/gpu_calibration_results.json \
-    --gpu-results path/to/a100_results.json path/to/h100_results.json
+    experiments/notebooks/gpu_calibration_results_t4.json \
+    --gpu-results experiments/notebooks/gpu_calibration_results_a100.json
 ```
 
 ### Validate transfer model

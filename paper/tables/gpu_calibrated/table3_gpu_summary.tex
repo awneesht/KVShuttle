@@ -1,31 +1,33 @@
-\begin{table}[t]
+\begin{table*}[t]
 \centering
-\caption{GPU kernel speedup over CPU numpy (Tesla T4)}
+\caption{GPU kernel speedup over CPU numpy: Tesla T4 vs.\ A100-SXM4-40GB}
 \label{tab:gpu_summary}
-\begin{tabular}{lccc}
+\begin{tabular}{lcccccc}
 \toprule
-Compressor & Operation & Mean Speedup & Range \\
+ & \multicolumn{3}{c}{Tesla T4 (320 GB/s)} & \multicolumn{3}{c}{A100-SXM4 (2039 GB/s)} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+Compressor & Operation & Mean & Range & Operation & Mean & Range \\
 \midrule
-  uniform\_int8 & Compress & 34$\times$ & [27$\times$, 41$\times$] \\
-  uniform\_int8 & Decompress & 80$\times$ & [60$\times$, 100$\times$] \\
+  uniform\_int8 & Compress & 34$\times$ & [27, 41$\times$] & Compress & 190$\times$ & [97, 277$\times$] \\
+  uniform\_int8 & Decompress & 80$\times$ & [60, 100$\times$] & Decompress & 456$\times$ & [263, 572$\times$] \\
 \midrule
-  kivi\_2bit & Compress & 53$\times$ & [38$\times$, 58$\times$] \\
-  kivi\_2bit & Decompress & 68$\times$ & [43$\times$, 78$\times$] \\
+  kivi\_2bit & Compress & 53$\times$ & [38, 58$\times$] & Compress & 284$\times$ & [166, 334$\times$] \\
+  kivi\_2bit & Decompress & 68$\times$ & [43, 78$\times$] & Decompress & 373$\times$ & [241, 425$\times$] \\
 \midrule
-  uniform\_int4 & Compress & 63$\times$ & [54$\times$, 74$\times$] \\
-  uniform\_int4 & Decompress & 62$\times$ & [48$\times$, 68$\times$] \\
+  uniform\_int4 & Compress & 63$\times$ & [54, 74$\times$] & Compress & 334$\times$ & [160, 407$\times$] \\
+  uniform\_int4 & Decompress & 62$\times$ & [48, 68$\times$] & Decompress & 311$\times$ & [142, 372$\times$] \\
 \midrule
-  fp8\_e4m3 & Compress & 36$\times$ & [25$\times$, 47$\times$] \\
-  fp8\_e4m3 & Decompress & 64$\times$ & [45$\times$, 92$\times$] \\
+  fp8\_e4m3 & Compress & 36$\times$ & [25, 47$\times$] & Compress & 355$\times$ & [136, 517$\times$] \\
+  fp8\_e4m3 & Decompress & 64$\times$ & [45, 92$\times$] & Decompress & 456$\times$ & [263, 607$\times$] \\
 \midrule
-  cachegen & Compress & 33$\times$ & [16$\times$, 42$\times$] \\
-  cachegen & Decompress & 56$\times$ & [34$\times$, 67$\times$] \\
+  cachegen & Compress & 33$\times$ & [16, 42$\times$] & Compress & 106$\times$ & [31, 211$\times$] \\
+  cachegen & Decompress & 56$\times$ & [34, 67$\times$] & Decompress & 275$\times$ & [86, 400$\times$] \\
 \midrule
-  cascade\_prune50\_int4 & Compress & 60$\times$ & [38$\times$, 85$\times$] \\
-  cascade\_prune50\_int4 & Decompress & 48$\times$ & [29$\times$, 60$\times$] \\
+  cascade\_prune50\_int4 & Compress & 60$\times$ & [38, 85$\times$] & Compress & 276$\times$ & [71, 454$\times$] \\
+  cascade\_prune50\_int4 & Decompress & 48$\times$ & [29, 60$\times$] & Decompress & 223$\times$ & [68, 322$\times$] \\
 \midrule
-  palu\_lr & Compress & 5$\times$ & [2$\times$, 11$\times$] \\
-  palu\_lr & Decompress & 216$\times$ & [149$\times$, 288$\times$] \\
+  palu\_lr & Compress & 5$\times$ & [2, 11$\times$] & Compress & 8$\times$ & [2, 17$\times$] \\
+  palu\_lr & Decompress & 216$\times$ & [149, 288$\times$] & Decompress & 848$\times$ & [336, 1129$\times$] \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
