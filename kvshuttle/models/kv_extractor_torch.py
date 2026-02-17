@@ -84,8 +84,8 @@ def _tokenize_prompt(tokenizer, prompt: str) -> list[int]:
         result = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=True
         )
-        # Newer transformers may return dict {"input_ids": [...], ...}
-        if isinstance(result, dict):
+        # Newer transformers may return dict/BatchEncoding {"input_ids": [...]}
+        if hasattr(result, "keys") and "input_ids" in result:
             result = result["input_ids"]
         if isinstance(result, str):
             return tokenizer.encode(result)
