@@ -16,6 +16,11 @@ from kvshuttle.visualization.pareto import plot_pareto_frontier
 from kvshuttle.visualization.bandwidth_sweep import plot_bandwidth_sweep, plot_speedup_curves
 from kvshuttle.visualization.heatmaps import plot_layer_sensitivity_heatmap
 from kvshuttle.visualization.kv_comparison import plot_kv_comparison
+from kvshuttle.visualization.quality import (
+    plot_perplexity_delta,
+    plot_token_agreement,
+    plot_cosine_vs_perplexity,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -102,6 +107,33 @@ def generate_figures(results_path: str, output_dir: str = "paper/figures") -> No
             most_common = max(by_nlayers.keys(), key=lambda k: len(by_nlayers[k]))
             avg_layer[name] = np.mean(np.array(by_nlayers[most_common]), axis=0).tolist()
         plot_layer_sensitivity_heatmap(avg_layer, output_dir / "fig5_layer_sensitivity.pdf")
+
+    # 5. Generation quality figures (perplexity delta, token agreement)
+    ppl_data: dict[str, dict[str, list[float]]] = {}
+    ta_data: dict[str, dict[str, list[float]]] = {}
+    avg_ppl_by_comp: dict[str, list[float]] = {}
+
+    for r in results:
+        comp = r["compressor"]
+        model = r["model"]
+        if "perplexity_delta" in r:
+            ppl_data.setdefault(comp, {}).setdefault(model, []).append(r["perplexity_delta"])
+            avg_ppl_by_comp.setdefault(comp, []).append(r["perplexity_delta"])
+        if "token_agreement" in r:
+            ta_data.setdefault(comp, {}).setdefault(model, []).append(r["token_agreement"])
+
+    if ppl_data:
+        logger.info("Generating perplexity delta figure...")
+        plot_perplexity_delta(ppl_data, output_dir / "fig6_perplexity_delta.pdf")
+
+    if ta_data:
+        logger.info("Generating token agreement figure...")
+        plot_token_agreement(ta_data, output_dir / "fig7_token_agreement.pdf")
+
+    if ppl_data and avg_k_cos:
+        logger.info("Generating cosine vs perplexity scatter...")
+        avg_ppl = {n: float(np.mean(v)) for n, v in avg_ppl_by_comp.items()}
+        plot_cosine_vs_perplexity(avg_k_cos, avg_ppl, output_dir / "fig8_cosine_vs_perplexity.pdf")
 
     logger.info("All figures saved to %s", output_dir)
 

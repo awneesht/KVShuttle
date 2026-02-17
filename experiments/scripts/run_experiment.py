@@ -146,6 +146,21 @@ def run_experiment(config_path: str) -> None:
             else:
                 keys, values = _get_synthetic_kv(model_name, seq_len)
 
+            # Pre-compute original logits ONCE per (model, prompt) — shared across compressors
+            logits_orig = None
+            token_ids = None
+            needs_gen_quality = model_loaded and prompt_text is not None and (
+                eval_cfg.get("perplexity", False) or eval_cfg.get("token_agreement", False)
+            )
+            if needs_gen_quality:
+                try:
+                    from kvshuttle.models.kv_injector import forward_with_kv_cache
+                    logits_orig = forward_with_kv_cache(model, tokenizer, prompt_text, keys, values)
+                    token_ids = np.array(tokenizer.encode(prompt_text))
+                except Exception as e:
+                    logger.warning("Original logits computation failed: %s", e)
+                    needs_gen_quality = False
+
             # Run each compressor
             for comp_name in compressor_names:
                 compressor = get_compressor(comp_name)
@@ -170,21 +185,14 @@ def run_experiment(config_path: str) -> None:
                         logger.warning("Quality eval failed for %s: %s", comp_name, e)
 
                 # End-to-end generation quality (perplexity, token agreement)
-                if model_loaded and prompt_text is not None and (
-                    eval_cfg.get("perplexity", False) or eval_cfg.get("token_agreement", False)
-                ):
+                if needs_gen_quality and logits_orig is not None:
                     try:
                         from kvshuttle.models.kv_injector import forward_with_kv_cache
-
-                        # Get logits with original and reconstructed KV caches
-                        logits_orig = forward_with_kv_cache(model, tokenizer, prompt_text, keys, values)
 
                         if keys_recon is None:
                             compressed = compressor.compress(keys, values)
                             keys_recon, values_recon = compressor.decompress(compressed)
                         logits_recon = forward_with_kv_cache(model, tokenizer, prompt_text, keys_recon, values_recon)
-
-                        token_ids = np.array(tokenizer.encode(prompt_text))
 
                         if eval_cfg.get("perplexity", False):
                             # Align logits and token_ids for perplexity (shift by 1)

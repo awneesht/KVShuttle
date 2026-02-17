@@ -1,0 +1,29 @@
+bandwidths_gbps:
+- 10
+compressors:
+- identity
+- uniform_int8
+- uniform_int4
+- kivi_2bit
+- cachegen
+- palu_lr
+- cascade_prune50_int4
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+experiment:
+  description: End-to-end generation quality with compressed KV caches
+  name: generation_quality
+models:
+- qwen2.5-3b
+- llama-3.1-8b
+- phi-3.5-mini
+output:
+  dir: experiments/results/generation_quality
+  save_per_layer: false
+prompts:
+  count: 10
+  max_tokens: 512
+  min_tokens: 128
+  source: wikitext
