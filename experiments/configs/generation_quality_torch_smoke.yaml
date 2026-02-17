@@ -1,0 +1,36 @@
+# Smoke test: single model, few prompts, fast turnaround on Colab T4
+experiment:
+  name: generation_quality_fp16_smoke
+  description: "Smoke test: qwen2.5-3b FP16 on GPU"
+
+backend: torch
+
+models:
+  - qwen2.5-3b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - palu_lr
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 10
+
+prompts:
+  source: wikitext
+  count: 5
+  min_tokens: 128
+  max_tokens: 256
+
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+
+output:
+  dir: experiments/results/generation_quality_fp16_smoke
+  save_per_layer: false
