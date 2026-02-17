@@ -42,7 +42,8 @@ def plot_perplexity_delta(
         ax.bar(x + offset, means, width, yerr=stds, label=model,
                color=colors[i], alpha=0.85, capsize=2)
 
-    ax.set_ylabel("Perplexity Delta (lower = better)", fontsize=12)
+    ax.set_yscale("symlog", linthresh=1)
+    ax.set_ylabel("Perplexity Delta (log scale, lower = better)", fontsize=12)
     ax.set_title(title, fontsize=14)
     ax.set_xticks(x)
     ax.set_xticklabels([c.replace("_", " ") for c in compressors], fontsize=10, rotation=15)
@@ -135,8 +136,9 @@ def plot_cosine_vs_perplexity(
         ax.annotate(name.replace("_", " "), (cos, ppl),
                     textcoords="offset points", xytext=(8, 4), fontsize=9)
 
+    ax.set_yscale("symlog", linthresh=1)
     ax.set_xlabel("Mean Cosine Similarity (KV cache)", fontsize=12)
-    ax.set_ylabel("Perplexity Delta", fontsize=12)
+    ax.set_ylabel("Perplexity Delta (log scale)", fontsize=12)
     ax.set_title(title, fontsize=14)
     ax.axhline(y=0, color="black", linestyle="--", linewidth=0.8, alpha=0.3)
     ax.grid(True, alpha=0.3)
