@@ -8,13 +8,13 @@ KVShuttle evaluates 14+ compression strategies across multiple models and sequen
 
 | Strategy | Ratio | Key cos | Val cos | Token Agree | T4 Speedup | A100 Speedup |
 |---|---|---|---|---|---|---|
-| uniform_int8 | 2.0x | 0.9998 | 0.9998 | 0.996 | 34-80x | 190-456x |
-| kivi_2bit | 6.5x | 0.9649 | 0.8706 | 0.823 | 53-68x | 284-373x |
-| uniform_int4 | 3.6x | 0.9872 | 0.9934 | 0.687 | 62-63x | 334-311x |
+| uniform_int8 | 2.0x | 0.9998 | 0.9998 | 0.975 | 34-80x | 190-456x |
+| kivi_2bit | 6.5x | 0.9649 | 0.8706 | 0.699 | 53-68x | 284-373x |
+| uniform_int4 | 3.6x | 0.9872 | 0.9934 | 0.644 | 62-63x | 334-311x |
 | fp8_e4m3 | 2.0x | — | — | — | 36-64x | 355-456x |
-| cachegen | 3.5x | 0.9927 | 0.9854 | 0.979 | 33-56x | 106-275x |
-| cascade_prune50_int4 | 7.1x | 0.7370 | 0.7021 | 0.432 | 48-60x | 276-223x |
-| palu_lr | 2.4x | 0.9829 | 0.9778 | 0.752 | 5-216x | 8-848x |
+| cachegen | 3.5x | 0.9927 | 0.9854 | 0.938 | 33-56x | 106-275x |
+| cascade_prune50_int4 | 7.1x | 0.7370 | 0.7021 | 0.343 | 48-60x | 276-223x |
+| palu_lr | 2.4x | 0.9829 | 0.9778 | 0.557 | 5-216x | 8-848x |
 
 *GPU speedups (compress-decompress) over CPU numpy, measured with CUDA Event timing (zero-copy). T4 = Tesla T4 (320 GB/s), A100 = A100-SXM4-40GB (2039 GB/s). Token agreement = greedy decode match rate with original KV cache (3 models, 10 WikiText prompts).*
 
