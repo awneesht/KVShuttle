@@ -38,8 +38,13 @@ def plot_perplexity_delta(
             vals = data.get(comp, {}).get(model, [0.0])
             means.append(np.mean(vals))
             stds.append(np.std(vals) if len(vals) > 1 else 0)
+        means_arr = np.array(means)
+        stds_arr = np.array(stds)
+        # Clip lower error bars so they don't go below zero
+        yerr_lower = np.minimum(stds_arr, means_arr.clip(0))
+        yerr_upper = stds_arr
         offset = (i - len(models) / 2 + 0.5) * width
-        ax.bar(x + offset, means, width, yerr=stds, label=model,
+        ax.bar(x + offset, means, width, yerr=[yerr_lower, yerr_upper], label=model,
                color=colors[i], alpha=0.85, capsize=2)
 
     ax.set_yscale("symlog", linthresh=1)
