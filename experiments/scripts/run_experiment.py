@@ -200,7 +200,7 @@ def run_experiment(config_path: str) -> None:
                     )
                     token_ids = np.array(continuation_ids)
                 except Exception as e:
-                    logger.warning("Original logits computation failed: %s", e)
+                    logger.warning("Original logits computation failed: %s", e, exc_info=True)
                     needs_gen_quality = False
 
             # Run each compressor
@@ -259,7 +259,7 @@ def run_experiment(config_path: str) -> None:
                                 logits_orig[:min_len], logits_recon[:min_len]
                             )
                     except Exception as e:
-                        logger.warning("Generation quality eval failed for %s: %s", comp_name, e)
+                        logger.warning("Generation quality eval failed for %s: %s", comp_name, e, exc_info=True)
 
                 for bw in bandwidths:
                     pipeline_result = run_pipeline(compressor, keys, values, bw)

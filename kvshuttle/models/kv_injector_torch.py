@@ -6,7 +6,6 @@ import logging
 
 import numpy as np
 import torch
-from transformers import DynamicCache
 
 logger = logging.getLogger(__name__)
 
@@ -37,29 +36,29 @@ def forward_continuation_with_kv_cache_torch(
     dtype = next(model.parameters()).dtype
     num_layers = keys.shape[0]
     prefix_len = keys.shape[2]
+    cont_len = len(continuation_ids)
 
-    # Build DynamicCache from numpy arrays
-    past = DynamicCache()
-    for layer_idx in range(num_layers):
-        # [num_kv_heads, prefix_len, head_dim] -> [1, num_kv_heads, prefix_len, head_dim]
-        k_tensor = torch.from_numpy(keys[layer_idx]).unsqueeze(0).to(device=device, dtype=dtype)
-        v_tensor = torch.from_numpy(values[layer_idx]).unsqueeze(0).to(device=device, dtype=dtype)
-        past.update(k_tensor, v_tensor, layer_idx)
+    # Build past_key_values from numpy arrays
+    past = _build_kv_cache(keys, values, num_layers, device, dtype)
 
     # Continuation tokens
     input_tensor = torch.tensor([continuation_ids], dtype=torch.long, device=device)
 
-    # Position IDs: continuation starts after the prefix
-    position_ids = torch.arange(
-        prefix_len, prefix_len + len(continuation_ids),
-        dtype=torch.long, device=device,
-    ).unsqueeze(0)
+    # Attention mask must cover prefix (cached) + continuation (new) tokens
+    attention_mask = torch.ones(1, prefix_len + cont_len, dtype=torch.long, device=device)
+
+    # cache_position: absolute positions of the new tokens being processed
+    cache_position = torch.arange(
+        prefix_len, prefix_len + cont_len, dtype=torch.long, device=device
+    )
 
     with torch.no_grad():
         outputs = model(
             input_ids=input_tensor,
+            attention_mask=attention_mask,
             past_key_values=past,
-            position_ids=position_ids,
+            cache_position=cache_position,
+            use_cache=False,
         )
 
     # [1, len(continuation_ids), vocab_size] -> [len(continuation_ids), vocab_size]
@@ -67,7 +66,28 @@ def forward_continuation_with_kv_cache_torch(
 
     logger.debug(
         "Continuation forward pass: prefix_len=%d, continuation_len=%d, logits_shape=%s",
-        prefix_len, len(continuation_ids), logits_np.shape,
+        prefix_len, cont_len, logits_np.shape,
     )
 
     return logits_np
+
+
+def _build_kv_cache(keys, values, num_layers, device, dtype):
+    """Build HF-compatible KV cache, with DynamicCache → tuple fallback."""
+    kv_pairs = []
+    for layer_idx in range(num_layers):
+        # [num_kv_heads, prefix_len, head_dim] -> [1, num_kv_heads, prefix_len, head_dim]
+        k = torch.from_numpy(keys[layer_idx]).unsqueeze(0).to(device=device, dtype=dtype)
+        v = torch.from_numpy(values[layer_idx]).unsqueeze(0).to(device=device, dtype=dtype)
+        kv_pairs.append((k, v))
+
+    try:
+        from transformers import DynamicCache
+
+        past = DynamicCache()
+        for layer_idx, (k, v) in enumerate(kv_pairs):
+            past.update(k, v, layer_idx)
+        return past
+    except (ImportError, Exception) as e:
+        logger.debug("DynamicCache unavailable (%s), using tuple format", e)
+        return tuple(kv_pairs)
