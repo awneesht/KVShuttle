@@ -1,0 +1,137 @@
+[
+  {
+    "payload_bytes": 1024,
+    "payload_mb": 0.0009765625,
+    "analytical_ms": 8.192e-05,
+    "real_ms": 0.062334,
+    "connect_ms": 0.07125,
+    "overhead_pct": 75991.30859375,
+    "all_real_ms": [
+      0.071167,
+      0.062334,
+      0.057375,
+      0.06175,
+      0.066375
+    ]
+  },
+  {
+    "payload_bytes": 10240,
+    "payload_mb": 0.009765625,
+    "analytical_ms": 0.0008192,
+    "real_ms": 0.049583,
+    "connect_ms": 0.056333,
+    "overhead_pct": 5952.612304687501,
+    "all_real_ms": [
+      0.049583,
+      0.054333,
+      0.074708,
+      0.041708,
+      0.046167
+    ]
+  },
+  {
+    "payload_bytes": 102400,
+    "payload_mb": 0.09765625,
+    "analytical_ms": 0.008192,
+    "real_ms": 0.064333,
+    "connect_ms": 0.041667,
+    "overhead_pct": 685.3149414062501,
+    "all_real_ms": [
+      0.064333,
+      0.055833,
+      0.055792,
+      0.082916,
+      0.087833
+    ]
+  },
+  {
+    "payload_bytes": 1048576,
+    "payload_mb": 1.0,
+    "analytical_ms": 0.08388608,
+    "real_ms": 0.42175,
+    "connect_ms": 0.0655,
+    "overhead_pct": 402.7651786804199,
+    "all_real_ms": [
+      0.579709,
+      0.42175,
+      0.211709,
+      0.202166,
+      0.467125
+    ]
+  },
+  {
+    "payload_bytes": 5242880,
+    "payload_mb": 5.0,
+    "analytical_ms": 0.4194304,
+    "real_ms": 1.286667,
+    "connect_ms": 0.069667,
+    "overhead_pct": 206.76531791687012,
+    "all_real_ms": [
+      1.625583,
+      0.86275,
+      0.759667,
+      1.764583,
+      1.286667
+    ]
+  },
+  {
+    "payload_bytes": 10485760,
+    "payload_mb": 10.0,
+    "analytical_ms": 0.8388608,
+    "real_ms": 1.8455,
+    "connect_ms": 0.057,
+    "overhead_pct": 120.0007438659668,
+    "all_real_ms": [
+      2.620125,
+      1.283708,
+      2.201958,
+      1.359292,
+      1.8455
+    ]
+  },
+  {
+    "payload_bytes": 26214400,
+    "payload_mb": 25.0,
+    "analytical_ms": 2.097152,
+    "real_ms": 3.563416,
+    "connect_ms": 0.064125,
+    "overhead_pct": 69.9169158935547,
+    "all_real_ms": [
+      4.396333,
+      3.563416,
+      3.360125,
+      3.592042,
+      2.777084
+    ]
+  },
+  {
+    "payload_bytes": 52428800,
+    "payload_mb": 50.0,
+    "analytical_ms": 4.194304,
+    "real_ms": 5.375083,
+    "connect_ms": 0.066833,
+    "overhead_pct": 28.151965141296394,
+    "all_real_ms": [
+      5.880042,
+      5.287125,
+      5.375083,
+      5.040417,
+      6.331709
+    ]
+  },
+  {
+    "payload_bytes": 104857600,
+    "payload_mb": 100.0,
+    "analytical_ms": 8.388608,
+    "real_ms": 18.320958,
+    "connect_ms": 0.050666,
+    "overhead_pct": 118.40283870697024,
+    "all_real_ms": [
+      12.840708,
+      15.997459,
+      19.465541,
+      21.040084,
+      18.320958
+    ]
+  }
+]
