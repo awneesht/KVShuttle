@@ -1,0 +1,42 @@
+# Real KV cache sweep: same as model_sweep but with real WikiText prompts
+experiment:
+  name: real_kv_sweep
+  description: "Benchmark with real KV caches from WikiText-103 prompts"
+
+models:
+  - qwen2.5-3b
+  - llama-3.2-3b
+  - phi-3.5-mini
+  - qwen2.5-7b
+  - llama-3.1-8b
+  - mistral-7b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - palu_lr
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 1
+  - 10
+  - 50
+  - 100
+
+prompts:
+  source: wikitext
+  count: 30
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+
+output:
+  dir: experiments/results/real_kv_sweep
+  save_per_layer: true

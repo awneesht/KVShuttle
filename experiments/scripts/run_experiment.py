@@ -14,7 +14,10 @@ import yaml
 from tqdm import tqdm
 
 from kvshuttle.compression.registry import get_compressor, list_compressors
+from kvshuttle.datasets import load_dataset_prompts
 from kvshuttle.evaluation.attention_error import compute_attention_error
+from kvshuttle.evaluation.perplexity import compute_perplexity_delta
+from kvshuttle.evaluation.token_agreement import compute_token_agreement
 from kvshuttle.profiling.timer import timer
 from kvshuttle.transfer.pipeline import run_pipeline
 
@@ -82,6 +85,22 @@ def run_experiment(config_path: str) -> None:
     prompt_count = prompt_cfg["count"]
     min_tokens = prompt_cfg.get("min_tokens", 64)
     max_tokens = prompt_cfg.get("max_tokens", 512)
+    prompt_source = prompt_cfg.get("source", "synthetic")
+
+    # Load real prompts if source is not synthetic
+    real_prompts: list[str] | None = None
+    if prompt_source != "synthetic":
+        try:
+            real_prompts = load_dataset_prompts(
+                dataset_name=prompt_source,
+                count=prompt_count,
+                min_tokens=min_tokens,
+                max_tokens=max_tokens,
+            )
+            logger.info("Loaded %d real prompts from %s", len(real_prompts), prompt_source)
+        except Exception as e:
+            logger.warning("Failed to load %s prompts: %s. Falling back to synthetic.", prompt_source, e)
+            prompt_source = "synthetic"
 
     all_results = []
     eval_cfg = config.get("evaluation", {})
@@ -92,6 +111,7 @@ def run_experiment(config_path: str) -> None:
 
         # Try to load real model, fall back to synthetic
         model_loaded = False
+        model = tokenizer = model_info = None
         try:
             from kvshuttle.models.loader import load_model
             from kvshuttle.models.kv_extractor import extract_kv_cache
@@ -101,7 +121,6 @@ def run_experiment(config_path: str) -> None:
             logger.info("Loaded model: %s", model_info)
         except Exception as e:
             logger.warning("Could not load model %s: %s. Using synthetic KV cache.", model_name, e)
-            model_info = None
 
         # Generate token length range for synthetic caches
         rng = np.random.default_rng(42)
@@ -109,11 +128,16 @@ def run_experiment(config_path: str) -> None:
 
         for prompt_idx in tqdm(range(prompt_count), desc=f"{model_name}"):
             seq_len = int(seq_lens[prompt_idx])
+            prompt_text = None
 
             if model_loaded:
-                prompts = generate_synthetic_prompts(1, min_tokens, max_tokens)
+                # Use real prompt if available, else generate synthetic
+                if real_prompts is not None and prompt_idx < len(real_prompts):
+                    prompt_text = real_prompts[prompt_idx]
+                else:
+                    prompt_text = generate_synthetic_prompts(1, min_tokens, max_tokens)[0]
                 try:
-                    kv = extract_kv_cache(model, tokenizer, prompts[0])
+                    kv = extract_kv_cache(model, tokenizer, prompt_text)
                     keys, values = kv.keys, kv.values
                     seq_len = kv.seq_len
                 except Exception as e:
@@ -128,6 +152,7 @@ def run_experiment(config_path: str) -> None:
 
                 # Compute quality metrics ONCE per (prompt, compressor) — independent of bandwidth
                 quality = {}
+                keys_recon = values_recon = None
                 if eval_cfg.get("attention_error", False):
                     try:
                         compressed = compressor.compress(keys, values)
@@ -144,6 +169,37 @@ def run_experiment(config_path: str) -> None:
                     except Exception as e:
                         logger.warning("Quality eval failed for %s: %s", comp_name, e)
 
+                # End-to-end generation quality (perplexity, token agreement)
+                if model_loaded and prompt_text is not None and (
+                    eval_cfg.get("perplexity", False) or eval_cfg.get("token_agreement", False)
+                ):
+                    try:
+                        from kvshuttle.models.kv_injector import forward_with_kv_cache
+
+                        # Get logits with original and reconstructed KV caches
+                        logits_orig = forward_with_kv_cache(model, tokenizer, prompt_text, keys, values)
+
+                        if keys_recon is None:
+                            compressed = compressor.compress(keys, values)
+                            keys_recon, values_recon = compressor.decompress(compressed)
+                        logits_recon = forward_with_kv_cache(model, tokenizer, prompt_text, keys_recon, values_recon)
+
+                        token_ids = np.array(tokenizer.encode(prompt_text))
+
+                        if eval_cfg.get("perplexity", False):
+                            # Align logits and token_ids for perplexity (shift by 1)
+                            min_len = min(logits_orig.shape[0], logits_recon.shape[0], len(token_ids) - 1)
+                            quality["perplexity_delta"] = compute_perplexity_delta(
+                                logits_orig[:min_len], logits_recon[:min_len], token_ids[1:min_len + 1]
+                            )
+                        if eval_cfg.get("token_agreement", False):
+                            min_len = min(logits_orig.shape[0], logits_recon.shape[0])
+                            quality["token_agreement"] = compute_token_agreement(
+                                logits_orig[:min_len], logits_recon[:min_len]
+                            )
+                    except Exception as e:
+                        logger.warning("Generation quality eval failed for %s: %s", comp_name, e)
+
                 for bw in bandwidths:
                     pipeline_result = run_pipeline(compressor, keys, values, bw)
 
@@ -153,6 +209,7 @@ def run_experiment(config_path: str) -> None:
                         "bandwidth_gbps": bw,
                         "seq_len": seq_len,
                         "prompt_idx": prompt_idx,
+                        "prompt_source": prompt_source,
                         "compress_ms": pipeline_result.compress_ms,
                         "serialize_ms": pipeline_result.serialize_ms,
                         "transfer_ms": pipeline_result.transfer_ms,
@@ -177,6 +234,7 @@ def run_experiment(config_path: str) -> None:
         "models": config["models"],
         "compressors": compressor_names,
         "bandwidths_gbps": bandwidths,
+        "prompt_source": prompt_source,
     }
 
     with open(results_path, "w") as f:

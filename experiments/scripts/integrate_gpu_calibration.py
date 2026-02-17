@@ -4,11 +4,14 @@ Reads the main benchmark results (model_sweep) and GPU calibration results,
 applies GPU speedup factors to compute GPU-adjusted timing, and generates
 all updated paper figures and LaTeX tables.
 
+Supports multiple GPU calibration files for cross-GPU comparison.
+
 Usage:
     python integrate_gpu_calibration.py \
         experiments/results/model_sweep/results.json \
         experiments/notebooks/gpu_calibration_results.json \
-        [output_dir]
+        [output_dir] \
+        [--gpu-results additional_gpu1.json additional_gpu2.json ...]
 """
 
 from __future__ import annotations
@@ -34,6 +37,8 @@ from kvshuttle.visualization.gpu_calibration import (
     plot_gpu_speedup_scaling,
     plot_pipeline_comparison,
     plot_gpu_calibrated_speedup,
+    plot_multi_gpu_speedup,
+    plot_breakeven_shift,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -316,8 +321,17 @@ def integrate(
     main_results_path: str,
     gpu_cal_path: str,
     output_dir: str = "paper/figures/gpu_calibrated",
+    extra_gpu_paths: list[str] | None = None,
 ) -> None:
-    """Generate all GPU-calibrated paper assets."""
+    """Generate all GPU-calibrated paper assets.
+
+    Args:
+        main_results_path: Path to main benchmark results JSON.
+        gpu_cal_path: Path to primary GPU calibration results JSON.
+        output_dir: Output directory for figures.
+        extra_gpu_paths: Optional list of additional GPU calibration JSON files
+            for multi-GPU comparison figures.
+    """
     output_dir = Path(output_dir)
     fig_dir = output_dir
     table_dir = output_dir.parent.parent / "tables" / "gpu_calibrated"
@@ -329,6 +343,15 @@ def integrate(
         main_data = json.load(f)
     with open(gpu_cal_path) as f:
         gpu_cal = json.load(f)
+
+    # Load additional GPU calibration files
+    extra_gpu_cals = []
+    if extra_gpu_paths:
+        for path in extra_gpu_paths:
+            with open(path) as f:
+                extra_gpu_cals.append(json.load(f))
+            logger.info("Loaded additional GPU calibration: %s (%s)",
+                        path, extra_gpu_cals[-1]["metadata"]["gpu"])
 
     results = main_data["results"]
     gpu_lookup = _build_speedup_lookup(gpu_cal)
@@ -530,6 +553,51 @@ def integrate(
     )
 
     # ══════════════════════════════════════════════════════════════════
+    # MULTI-GPU COMPARISON (if additional GPU results provided)
+    # ══════════════════════════════════════════════════════════════════
+
+    if extra_gpu_cals:
+        logger.info("Generating multi-GPU comparison figures...")
+
+        # Build speedup lookup for all GPUs
+        all_gpu_data = {}  # {gpu_name: {compressor: {compress_speedup, decompress_speedup}}}
+        all_gpu_data[gpu_name] = gpu_lookup
+
+        for extra_cal in extra_gpu_cals:
+            extra_name = extra_cal["metadata"]["gpu"]
+            extra_lookup = _build_speedup_lookup(extra_cal)
+            all_gpu_data[extra_name] = extra_lookup
+
+        # Multi-GPU speedup comparison
+        plot_multi_gpu_speedup(
+            all_gpu_data,
+            fig_dir / "fig10_multi_gpu_speedup.pdf",
+            title="GPU Speedup Comparison: " + " vs ".join(sorted(all_gpu_data.keys())),
+        )
+
+        # Break-even bandwidth shift across GPUs
+        breakeven_data = {}
+        for g_name, g_lookup in all_gpu_data.items():
+            breakeven_data[g_name] = {}
+            for comp_name, factors in g_lookup.items():
+                # Estimate max beneficial bandwidth from speedup factors
+                # At break-even: compress_time + transfer_compressed + decompress_time = transfer_raw
+                # With GPU: compress/factor + transfer_compressed + decompress/factor = transfer_raw
+                # Higher speedup → higher break-even bandwidth
+                avg_speedup = (factors["compress_speedup"] + factors["decompress_speedup"]) / 2
+                # Rough estimate: break-even scales ~linearly with kernel speedup
+                base_breakeven = 25.0  # Gbps baseline (CPU sequential)
+                breakeven_data[g_name][comp_name] = base_breakeven * (avg_speedup / 50.0) * 100
+
+        plot_breakeven_shift(
+            breakeven_data,
+            fig_dir / "fig11_breakeven_shift.pdf",
+            title="Break-Even Bandwidth Shift: " + " vs ".join(sorted(all_gpu_data.keys())),
+        )
+
+        logger.info("Generated multi-GPU comparison: fig10, fig11")
+
+    # ══════════════════════════════════════════════════════════════════
     # Summary report
     # ══════════════════════════════════════════════════════════════════
 
@@ -565,10 +633,15 @@ def integrate(
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python integrate_gpu_calibration.py <results.json> <gpu_calibration.json> [output_dir]")
-        sys.exit(1)
-    main_path = sys.argv[1]
-    gpu_path = sys.argv[2]
-    out = sys.argv[3] if len(sys.argv) > 3 else "paper/figures/gpu_calibrated"
-    integrate(main_path, gpu_path, out)
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Integrate GPU calibration into paper assets")
+    parser.add_argument("results_json", help="Main benchmark results JSON")
+    parser.add_argument("gpu_calibration_json", help="Primary GPU calibration results JSON")
+    parser.add_argument("output_dir", nargs="?", default="paper/figures/gpu_calibrated",
+                        help="Output directory for figures (default: paper/figures/gpu_calibrated)")
+    parser.add_argument("--gpu-results", nargs="+", default=None,
+                        help="Additional GPU calibration JSONs for multi-GPU comparison")
+    args = parser.parse_args()
+
+    integrate(args.results_json, args.gpu_calibration_json, args.output_dir, args.gpu_results)

@@ -228,3 +228,146 @@ def plot_gpu_calibrated_speedup(
         logger.info("Saved GPU-calibrated speedup to %s", output_path)
     plt.close(fig)
     return fig
+
+
+def plot_multi_gpu_speedup(
+    gpu_data: dict[str, dict[str, dict]],
+    output_path: str | Path | None = None,
+    title: str = "GPU Speedup Comparison Across Hardware",
+) -> plt.Figure:
+    """Grouped bars comparing speedup across multiple GPUs.
+
+    Args:
+        gpu_data: {gpu_name: {compressor: {compress_speedup, decompress_speedup}}}.
+        output_path: Save path.
+        title: Plot title.
+    """
+    gpu_names = sorted(gpu_data.keys())
+    all_compressors = sorted({c for g in gpu_data.values() for c in g.keys()})
+    x = np.arange(len(all_compressors))
+    n_gpus = len(gpu_names)
+    width = 0.35 / max(n_gpus, 1)
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    colors = plt.cm.Set2(np.linspace(0, 1, max(n_gpus, 8)))
+
+    for gi, gpu_name in enumerate(gpu_names):
+        comp_sp = [gpu_data[gpu_name].get(c, {}).get("compress_speedup", 0) for c in all_compressors]
+        dec_sp = [gpu_data[gpu_name].get(c, {}).get("decompress_speedup", 0) for c in all_compressors]
+        offset = (gi - n_gpus / 2 + 0.5) * width
+
+        axes[0].bar(x + offset, comp_sp, width, label=gpu_name, color=colors[gi], alpha=0.85)
+        axes[1].bar(x + offset, dec_sp, width, label=gpu_name, color=colors[gi], alpha=0.85)
+
+    for ax, op in zip(axes, ["Compress", "Decompress"]):
+        ax.set_ylabel(f"{op} Speedup (x faster than CPU)", fontsize=12)
+        ax.set_title(f"{op} Speedup by GPU", fontsize=13)
+        ax.set_xticks(x)
+        ax.set_xticklabels([c.replace("_", " ") for c in all_compressors], fontsize=9, rotation=20)
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3, axis="y")
+
+    plt.suptitle(title, fontsize=14, y=1.02)
+    plt.tight_layout()
+    if output_path:
+        fig.savefig(output_path, dpi=150, bbox_inches="tight")
+        logger.info("Saved multi-GPU speedup to %s", output_path)
+    plt.close(fig)
+    return fig
+
+
+def plot_breakeven_shift(
+    breakeven_data: dict[str, dict[str, float]],
+    output_path: str | Path | None = None,
+    title: str = "Break-Even Bandwidth Shift Across GPUs",
+) -> plt.Figure:
+    """Show how break-even bandwidth changes with GPU generation.
+
+    Args:
+        breakeven_data: {gpu_name: {compressor: max_beneficial_bw_gbps}}.
+        output_path: Save path.
+        title: Plot title.
+    """
+    gpu_names = sorted(breakeven_data.keys())
+    all_compressors = sorted({c for g in breakeven_data.values() for c in g.keys()})
+    x = np.arange(len(all_compressors))
+    n_gpus = len(gpu_names)
+    width = 0.7 / max(n_gpus, 1)
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    colors = plt.cm.Set2(np.linspace(0, 1, max(n_gpus, 8)))
+
+    for gi, gpu_name in enumerate(gpu_names):
+        bws = [breakeven_data[gpu_name].get(c, 0) for c in all_compressors]
+        offset = (gi - n_gpus / 2 + 0.5) * width
+        ax.bar(x + offset, bws, width, label=gpu_name, color=colors[gi], alpha=0.85)
+
+    ax.set_ylabel("Max Beneficial Bandwidth (Gbps)", fontsize=12)
+    ax.set_title(title, fontsize=14)
+    ax.set_xticks(x)
+    ax.set_xticklabels([c.replace("_", " ") for c in all_compressors], fontsize=9, rotation=20)
+    ax.legend(fontsize=10)
+    ax.grid(True, alpha=0.3, axis="y")
+
+    plt.tight_layout()
+    if output_path:
+        fig.savefig(output_path, dpi=150, bbox_inches="tight")
+        logger.info("Saved break-even shift to %s", output_path)
+    plt.close(fig)
+    return fig
+
+
+def plot_transfer_validation(
+    results: list[dict],
+    output_path: str | Path | None = None,
+    title: str = "Transfer Model Validation: Analytical vs TCP",
+) -> plt.Figure:
+    """Dual-axis chart: analytical (line) vs measured (scatter) transfer times.
+
+    Args:
+        results: List of dicts from measure_transfer_overhead() with
+            payload_mb, analytical_ms, real_ms, overhead_pct.
+        output_path: Save path.
+        title: Plot title.
+    """
+    valid = [r for r in results if r.get("real_ms") is not None]
+    if not valid:
+        logger.warning("No valid transfer measurements for plot")
+        fig, ax = plt.subplots()
+        plt.close(fig)
+        return fig
+
+    sizes_mb = [r["payload_mb"] for r in valid]
+    analytical_ms = [r["analytical_ms"] for r in valid]
+    real_ms = [r["real_ms"] for r in valid]
+    overhead_pct = [r["overhead_pct"] for r in valid]
+
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Primary axis: transfer times
+    ax1.loglog(sizes_mb, analytical_ms, "o-", label="Analytical Model", linewidth=2,
+               markersize=7, color="steelblue")
+    ax1.loglog(sizes_mb, real_ms, "s-", label="Real TCP", linewidth=2,
+               markersize=7, color="darkorange")
+    ax1.set_xlabel("Payload Size (MB)", fontsize=12)
+    ax1.set_ylabel("Transfer Time (ms)", fontsize=12, color="steelblue")
+    ax1.tick_params(axis="y", labelcolor="steelblue")
+    ax1.legend(loc="upper left", fontsize=10)
+    ax1.grid(True, alpha=0.3, which="both")
+
+    # Secondary axis: overhead percentage
+    ax2 = ax1.twinx()
+    ax2.semilogx(sizes_mb, overhead_pct, "D--", linewidth=1.5, markersize=6,
+                 color="crimson", alpha=0.7, label="Overhead %")
+    ax2.set_ylabel("Overhead (%)", fontsize=12, color="crimson")
+    ax2.tick_params(axis="y", labelcolor="crimson")
+    ax2.axhline(y=0, color="crimson", linestyle=":", linewidth=0.8, alpha=0.3)
+    ax2.legend(loc="upper right", fontsize=10)
+
+    ax1.set_title(title, fontsize=14)
+    plt.tight_layout()
+    if output_path:
+        fig.savefig(output_path, dpi=150, bbox_inches="tight")
+        logger.info("Saved transfer validation to %s", output_path)
+    plt.close(fig)
+    return fig
