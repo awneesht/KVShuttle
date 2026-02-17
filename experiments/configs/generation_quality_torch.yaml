@@ -1,0 +1,39 @@
+# Generation quality evaluation: FP16 models on GPU via PyTorch
+experiment:
+  name: generation_quality_fp16
+  description: "End-to-end generation quality with FP16 models on GPU"
+
+backend: torch
+
+models:
+  - qwen2.5-3b
+  - phi-3.5-mini
+  - llama-3.1-8b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - palu_lr
+  - cascade_prune50_int4
+
+# Single bandwidth — quality metrics are bandwidth-independent
+bandwidths_gbps:
+  - 10
+
+prompts:
+  source: wikitext
+  count: 50
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+
+output:
+  dir: experiments/results/generation_quality_fp16
+  save_per_layer: false

@@ -61,7 +61,8 @@ def run_experiment(config_path: str) -> None:
         config = yaml.safe_load(f)
 
     exp = config["experiment"]
-    logger.info("Starting experiment: %s — %s", exp["name"], exp["description"])
+    backend = config.get("backend", "mlx")
+    logger.info("Starting experiment: %s — %s (backend=%s)", exp["name"], exp["description"], backend)
 
     # Setup output directory
     output_dir = Path(config["output"]["dir"])
@@ -113,10 +114,19 @@ def run_experiment(config_path: str) -> None:
         model_loaded = False
         model = tokenizer = model_info = None
         try:
-            from kvshuttle.models.loader import load_model
-            from kvshuttle.models.kv_extractor import extract_kv_cache
+            if backend == "torch":
+                from kvshuttle.models.loader_torch import load_model_torch
+                from kvshuttle.models.kv_extractor_torch import extract_kv_cache_torch
 
-            model, tokenizer, model_info = load_model(model_name)
+                model, tokenizer, model_info = load_model_torch(model_name)
+                _extract_kv_cache = extract_kv_cache_torch
+            else:
+                from kvshuttle.models.loader import load_model
+                from kvshuttle.models.kv_extractor import extract_kv_cache
+
+                model, tokenizer, model_info = load_model(model_name)
+                _extract_kv_cache = extract_kv_cache
+
             model_loaded = True
             logger.info("Loaded model: %s", model_info)
         except Exception as e:
@@ -137,7 +147,7 @@ def run_experiment(config_path: str) -> None:
                 else:
                     prompt_text = generate_synthetic_prompts(1, min_tokens, max_tokens)[0]
                 try:
-                    kv = extract_kv_cache(model, tokenizer, prompt_text)
+                    kv = _extract_kv_cache(model, tokenizer, prompt_text)
                     keys, values = kv.keys, kv.values
                     seq_len = kv.seq_len
                 except Exception as e:
@@ -158,7 +168,10 @@ def run_experiment(config_path: str) -> None:
             )
             if needs_gen_quality:
                 try:
-                    from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
+                    if backend == "torch":
+                        from kvshuttle.models.kv_injector_torch import forward_continuation_with_kv_cache_torch as forward_continuation_with_kv_cache
+                    else:
+                        from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
 
                     # Tokenize with chat template (matching what extract_kv_cache used)
                     if hasattr(tokenizer, "apply_chat_template"):
@@ -216,7 +229,10 @@ def run_experiment(config_path: str) -> None:
                 # End-to-end generation quality (perplexity, token agreement)
                 if needs_gen_quality and logits_orig is not None:
                     try:
-                        from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
+                        if backend == "torch":
+                            from kvshuttle.models.kv_injector_torch import forward_continuation_with_kv_cache_torch as forward_continuation_with_kv_cache
+                        else:
+                            from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
 
                         if keys_recon is None:
                             compressed = compressor.compress(keys, values)
@@ -274,6 +290,7 @@ def run_experiment(config_path: str) -> None:
     results_path = output_dir / "results.json"
     metadata = {
         "experiment": exp["name"],
+        "backend": backend,
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "num_results": len(all_results),
         "models": config["models"],
