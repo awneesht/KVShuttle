@@ -147,16 +147,45 @@ def run_experiment(config_path: str) -> None:
                 keys, values = _get_synthetic_kv(model_name, seq_len)
 
             # Pre-compute original logits ONCE per (model, prompt) — shared across compressors
+            # Uses continuation-based evaluation: split KV into prefix (80%) and
+            # continuation (20%), inject prefix KV, forward on continuation tokens.
             logits_orig = None
             token_ids = None
+            split_point = None
+            continuation_ids = None
             needs_gen_quality = model_loaded and prompt_text is not None and (
                 eval_cfg.get("perplexity", False) or eval_cfg.get("token_agreement", False)
             )
             if needs_gen_quality:
                 try:
-                    from kvshuttle.models.kv_injector import forward_with_kv_cache
-                    logits_orig = forward_with_kv_cache(model, tokenizer, prompt_text, keys, values)
-                    token_ids = np.array(tokenizer.encode(prompt_text))
+                    from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
+
+                    # Tokenize with chat template (matching what extract_kv_cache used)
+                    if hasattr(tokenizer, "apply_chat_template"):
+                        messages = [{"role": "user", "content": prompt_text}]
+                        text = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
+                        if isinstance(text, str):
+                            all_token_ids = tokenizer.encode(text)
+                        else:
+                            all_token_ids = list(text)
+                    else:
+                        all_token_ids = tokenizer.encode(prompt_text)
+
+                    # Split at 80%: prefix KV + continuation tokens
+                    total_len = len(all_token_ids)
+                    split_point = max(1, int(total_len * 0.8))
+                    # Ensure at least 10 continuation tokens
+                    split_point = min(split_point, total_len - 10) if total_len > 10 else max(1, total_len - 1)
+                    continuation_ids = all_token_ids[split_point:]
+
+                    # Truncate original KV to prefix length
+                    keys_prefix = keys[:, :, :split_point, :]
+                    values_prefix = values[:, :, :split_point, :]
+
+                    logits_orig = forward_continuation_with_kv_cache(
+                        model, keys_prefix, values_prefix, continuation_ids
+                    )
+                    token_ids = np.array(continuation_ids)
                 except Exception as e:
                     logger.warning("Original logits computation failed: %s", e)
                     needs_gen_quality = False
@@ -187,16 +216,24 @@ def run_experiment(config_path: str) -> None:
                 # End-to-end generation quality (perplexity, token agreement)
                 if needs_gen_quality and logits_orig is not None:
                     try:
-                        from kvshuttle.models.kv_injector import forward_with_kv_cache
+                        from kvshuttle.models.kv_injector import forward_continuation_with_kv_cache
 
                         if keys_recon is None:
                             compressed = compressor.compress(keys, values)
                             keys_recon, values_recon = compressor.decompress(compressed)
-                        logits_recon = forward_with_kv_cache(model, tokenizer, prompt_text, keys_recon, values_recon)
+
+                        # Truncate reconstructed KV to prefix length
+                        keys_recon_prefix = keys_recon[:, :, :split_point, :]
+                        values_recon_prefix = values_recon[:, :, :split_point, :]
+
+                        logits_recon = forward_continuation_with_kv_cache(
+                            model, keys_recon_prefix, values_recon_prefix, continuation_ids
+                        )
 
                         if eval_cfg.get("perplexity", False):
-                            # Align logits and token_ids for perplexity (shift by 1)
-                            min_len = min(logits_orig.shape[0], logits_recon.shape[0], len(token_ids) - 1)
+                            # Continuation logits[i] predicts continuation_ids[i+1]
+                            # So we use logits[:-1] and token_ids[1:]
+                            min_len = min(logits_orig.shape[0], logits_recon.shape[0], len(token_ids)) - 1
                             quality["perplexity_delta"] = compute_perplexity_delta(
                                 logits_orig[:min_len], logits_recon[:min_len], token_ids[1:min_len + 1]
                             )
