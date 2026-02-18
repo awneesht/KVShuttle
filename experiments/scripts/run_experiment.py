@@ -151,7 +151,7 @@ def run_experiment(config_path: str) -> None:
                     keys, values = kv.keys, kv.values
                     seq_len = kv.seq_len
                 except Exception as e:
-                    logger.warning("KV extraction failed: %s. Using synthetic.", e)
+                    logger.warning("KV extraction failed: %s. Using synthetic.", e, exc_info=True)
                     keys, values = _get_synthetic_kv(model_name, seq_len)
             else:
                 keys, values = _get_synthetic_kv(model_name, seq_len)
