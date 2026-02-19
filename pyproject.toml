@@ -9,7 +9,7 @@ description = "Benchmark and decision framework for KV cache transfer compressio
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
-authors = [{name = "Awneesh Verma"}]
+authors = [{name = "Awneesh Tiwari"}]
 dependencies = [
     "numpy>=1.26",
     "scipy>=1.12",
