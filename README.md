@@ -67,13 +67,23 @@ tests/                 # pytest suite (79 tests)
 ## Installation
 
 ```bash
+# Core (works on any platform — Linux, macOS, Windows)
 pip install -e .
+
+# Apple Silicon (MLX backend)
+pip install -e ".[mlx]"
+
+# GPU / Colab (PyTorch backend)
+pip install -e ".[torch]"
+
+# Everything
+pip install -e ".[all]"
 
 # For development
 pip install -e ".[dev]"
 ```
 
-Requires Python >= 3.11. GPU kernels require PyTorch with CUDA support.
+Requires Python >= 3.11.
 
 ## Quick Start
 
