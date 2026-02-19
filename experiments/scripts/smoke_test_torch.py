@@ -6,20 +6,22 @@ import sys
 import traceback
 
 import numpy as np
+import torch
 
 
 def main() -> int:
     errors = []
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # ── 1. Loader ──
     print("=" * 60)
-    print("1. Testing loader_torch (gpt2 on CPU)...")
+    print(f"1. Testing loader_torch (gpt2 on {device})...")
     try:
         from kvshuttle.models.loader_torch import load_model_torch
 
         model, tokenizer, info = load_model_torch(
             "gpt2",  # not in registry → used as raw HF ID, already cached
-            device="cpu",
+            device=device,
         )
         print(f"   Model loaded: {info}")
         print(f"   layers={info.num_layers}, kv_heads={info.num_kv_heads}, "
