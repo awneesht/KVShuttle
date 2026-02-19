@@ -1,12 +1,11 @@
-# 7B+ models on A100 (40GB) for FP16
+# Mistral-7B + Qwen2.5-7B on A100 (40GB) for FP16
 experiment:
   name: generation_quality_fp16
-  description: "7B+ models FP16 on A100 GPU"
+  description: "Mistral-7B + Qwen2.5-7B FP16 on A100 GPU"
 
 backend: torch
 
 models:
-  - llama-3.1-8b
   - mistral-7b
   - qwen2.5-7b
 
@@ -34,5 +33,5 @@ evaluation:
   token_agreement: true
 
 output:
-  dir: experiments/results/generation_quality_fp16_llama
+  dir: experiments/results/generation_quality_fp16_7b
   save_per_layer: false
