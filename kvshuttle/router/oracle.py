@@ -8,7 +8,6 @@ from dataclasses import dataclass
 import numpy as np
 
 from kvshuttle.compression.registry import get_compressor, list_compressors
-from kvshuttle.router.features import RouterInput
 from kvshuttle.transfer.pipeline import run_pipeline
 
 logger = logging.getLogger(__name__)

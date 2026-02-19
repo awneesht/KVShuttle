@@ -9,8 +9,8 @@ from __future__ import annotations
 import numpy as np
 
 from kvshuttle.compression.base import BaseCompressor, CompressedKVCache
-from kvshuttle.compression.registry import register
 from kvshuttle.compression.pruning import _select_important_tokens
+from kvshuttle.compression.registry import register
 
 
 @register("cascade_prune50_int4")

@@ -6,7 +6,6 @@ import logging
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

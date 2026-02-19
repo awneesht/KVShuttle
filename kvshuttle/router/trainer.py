@@ -10,7 +10,6 @@ import numpy as np
 
 from kvshuttle.router.features import RouterInput
 from kvshuttle.router.learned_router import LearnedRouter
-from kvshuttle.router.lookup_table import LookupTableRouter
 
 logger = logging.getLogger(__name__)
 

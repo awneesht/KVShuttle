@@ -6,9 +6,9 @@ import numpy as np
 import pytest
 
 from kvshuttle.compression.registry import get_compressor, list_compressors
-from kvshuttle.transfer.serializer import serialize, deserialize
-from kvshuttle.transfer.simulator import simulate_transfer
 from kvshuttle.transfer.pipeline import run_pipeline, run_pipeline_sweep
+from kvshuttle.transfer.serializer import deserialize, serialize
+from kvshuttle.transfer.simulator import simulate_transfer
 
 
 class TestBaselineCompressors:

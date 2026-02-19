@@ -28,8 +28,8 @@ class MixedK8V4Compressor(BaseCompressor):
         original_size = keys.nbytes + values.nbytes
 
         from kvshuttle.compression.uniform_quant import (
-            _symmetric_quantize,
             _group_int4_quantize,
+            _symmetric_quantize,
         )
 
         # Keys: INT8
@@ -74,8 +74,8 @@ class MixedK8V4Compressor(BaseCompressor):
         vs_end = vp_end + meta["vs_len"]
 
         from kvshuttle.compression.uniform_quant import (
-            _symmetric_dequantize,
             _group_int4_dequantize,
+            _symmetric_dequantize,
         )
 
         k_quant = np.frombuffer(buf[:kq_end], dtype=np.int8).reshape(meta["key_shape"])

@@ -32,8 +32,9 @@ class TestForwardWithKVCache:
         seq_len = 16
 
         rng = np.random.default_rng(42)
-        keys = rng.standard_normal((num_layers, num_kv_heads, seq_len, head_dim)).astype(np.float16)
-        values = rng.standard_normal((num_layers, num_kv_heads, seq_len, head_dim)).astype(np.float16)
+        shape = (num_layers, num_kv_heads, seq_len, head_dim)
+        keys = rng.standard_normal(shape).astype(np.float16)
+        values = rng.standard_normal(shape).astype(np.float16)
 
         logits = forward_with_kv_cache(model, tokenizer, prompt, keys, values)
 
@@ -53,8 +54,9 @@ class TestForwardWithKVCache:
         seq_len = 8
 
         rng = np.random.default_rng(123)
-        keys = rng.standard_normal((num_layers, num_kv_heads, seq_len, head_dim)).astype(np.float16)
-        values = rng.standard_normal((num_layers, num_kv_heads, seq_len, head_dim)).astype(np.float16)
+        shape = (num_layers, num_kv_heads, seq_len, head_dim)
+        keys = rng.standard_normal(shape).astype(np.float16)
+        values = rng.standard_normal(shape).astype(np.float16)
 
         logits = forward_with_kv_cache(model, tokenizer, prompt, keys, values)
 

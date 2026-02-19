@@ -9,8 +9,8 @@ import numpy as np
 
 from kvshuttle.compression.base import BaseCompressor
 from kvshuttle.profiling.timer import timer
-from kvshuttle.transfer.serializer import serialize, deserialize, wire_size
-from kvshuttle.transfer.simulator import simulate_transfer, raw_transfer_ms
+from kvshuttle.transfer.serializer import deserialize, serialize
+from kvshuttle.transfer.simulator import raw_transfer_ms, simulate_transfer
 
 logger = logging.getLogger(__name__)
 

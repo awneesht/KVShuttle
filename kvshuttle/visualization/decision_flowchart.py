@@ -134,18 +134,34 @@ def generate_decision_flowchart(output_path: str | Path | None = None) -> None:
               RECOMMEND, fontsize=8.5, bold=True)
 
     # ── Avoid box (left side) ──
-    _draw_box(ax, -3.8, 5.4, 2.4, 1.8,
-              "Avoid for\ngeneration tasks:\n\nuniform_int4\nTA=0.59 | ppl\u0394=13k\n\ncascade\nTA=0.33 | ppl\u0394=18k",
-              WARN, fontsize=7.5, bold=False)
+    _draw_box(
+        ax, -3.8, 5.4, 2.4, 1.8,
+        "Avoid for\ngeneration tasks:\n\n"
+        "uniform_int4\nTA=0.59 | ppl\u0394=13k\n\n"
+        "cascade\nTA=0.33 | ppl\u0394=18k",
+        WARN, fontsize=7.5, bold=False,
+    )
 
     # ── Legend ──
     y_leg = 0.8
     ax.text(-4.5, y_leg + 0.3, "Legend", fontsize=9, fontweight="bold")
-    ax.text(-4.5, y_leg, "TA = Token Agreement (greedy decode match rate)", fontsize=7.5, color="#555")
-    ax.text(-4.5, y_leg - 0.3, "ppl\u0394 = Perplexity delta vs uncompressed", fontsize=7.5, color="#555")
+    ax.text(
+        -4.5, y_leg,
+        "TA = Token Agreement (greedy decode match rate)",
+        fontsize=7.5, color="#555",
+    )
+    ax.text(
+        -4.5, y_leg - 0.3,
+        "ppl\u0394 = Perplexity delta vs uncompressed",
+        fontsize=7.5, color="#555",
+    )
     ax.text(-4.5, y_leg - 0.6, "N.Nx = Compression ratio", fontsize=7.5, color="#555")
     ax.text(-4.5, y_leg - 0.9, "Break-even: GPU pipelined, Tesla T4", fontsize=7.5, color="#555")
-    ax.text(-4.5, y_leg - 1.2, "Quality: FP16, 5 models, 50 WikiText prompts", fontsize=7.5, color="#555")
+    ax.text(
+        -4.5, y_leg - 1.2,
+        "Quality: FP16, 5 models, 50 WikiText prompts",
+        fontsize=7.5, color="#555",
+    )
 
     plt.tight_layout()
 

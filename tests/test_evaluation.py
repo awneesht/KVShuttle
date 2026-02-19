@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from kvshuttle.evaluation.attention_error import compute_attention_error
-from kvshuttle.evaluation.token_agreement import compute_token_agreement
 from kvshuttle.evaluation.perplexity import compute_perplexity_from_logits
+from kvshuttle.evaluation.token_agreement import compute_token_agreement
 
 
 class TestAttentionError:

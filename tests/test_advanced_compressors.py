@@ -7,7 +7,6 @@ import pytest
 
 from kvshuttle.compression.registry import get_compressor, list_compressors
 
-
 ADVANCED_COMPRESSORS = ["kivi_2bit", "cachegen", "kvquant_2bit", "palu_lr", "topk_prune_50"]
 
 

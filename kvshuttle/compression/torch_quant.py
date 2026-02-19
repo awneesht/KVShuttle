@@ -31,7 +31,7 @@ from kvshuttle.compression.base import BaseCompressor, CompressedKVCache
 from kvshuttle.compression.registry import register
 
 
-def _get_device() -> "torch.device":
+def _get_device() -> torch.device:
     """Get the best available torch device."""
     if not _HAS_TORCH:
         raise RuntimeError("PyTorch is required. Install with: pip install torch")
@@ -51,7 +51,7 @@ def _get_device() -> "torch.device":
 # ===========================================================================
 
 
-def gpu_int8_compress(x: "torch.Tensor") -> tuple["torch.Tensor", "torch.Tensor"]:
+def gpu_int8_compress(x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     """Per-layer symmetric INT8 quantization — GPU-native, zero-copy.
 
     Args:
@@ -75,8 +75,8 @@ def gpu_int8_compress(x: "torch.Tensor") -> tuple["torch.Tensor", "torch.Tensor"
 
 
 def gpu_int8_decompress(
-    quantized: "torch.Tensor", scales: "torch.Tensor"
-) -> "torch.Tensor":
+    quantized: torch.Tensor, scales: torch.Tensor
+) -> torch.Tensor:
     """Dequantize INT8 back to float — GPU-native, zero-copy.
 
     Args:
@@ -92,8 +92,8 @@ def gpu_int8_decompress(
 
 
 def gpu_kivi_compress_keys(
-    x: "torch.Tensor", qmax: int = 3
-) -> tuple["torch.Tensor", "torch.Tensor", "torch.Tensor"]:
+    x: torch.Tensor, qmax: int = 3
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Per-channel 2-bit quantization for keys — GPU-native, zero-copy.
 
     Quantizes along seq_len axis (dim=2). Scale/zero per [L, H, D].
@@ -113,13 +113,16 @@ def gpu_kivi_compress_keys(
     scales = rng / qmax
     zeros = tmin
 
-    quantized = ((x - zeros.unsqueeze(2)) / scales.unsqueeze(2)).round().clamp(0, qmax).to(torch.uint8)
+    quantized = (
+        ((x - zeros.unsqueeze(2)) / scales.unsqueeze(2))
+        .round().clamp(0, qmax).to(torch.uint8)
+    )
     return quantized, scales, zeros
 
 
 def gpu_kivi_compress_values(
-    x: "torch.Tensor", qmax: int = 3
-) -> tuple["torch.Tensor", "torch.Tensor", "torch.Tensor"]:
+    x: torch.Tensor, qmax: int = 3
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Per-token 2-bit quantization for values — GPU-native, zero-copy.
 
     Quantizes along head_dim axis (dim=3). Scale/zero per [L, H, S].
@@ -139,20 +142,23 @@ def gpu_kivi_compress_values(
     scales = rng / qmax
     zeros = tmin
 
-    quantized = ((x - zeros.unsqueeze(3)) / scales.unsqueeze(3)).round().clamp(0, qmax).to(torch.uint8)
+    quantized = (
+        ((x - zeros.unsqueeze(3)) / scales.unsqueeze(3))
+        .round().clamp(0, qmax).to(torch.uint8)
+    )
     return quantized, scales, zeros
 
 
 def gpu_kivi_decompress_keys(
-    quantized: "torch.Tensor", scales: "torch.Tensor", zeros: "torch.Tensor"
-) -> "torch.Tensor":
+    quantized: torch.Tensor, scales: torch.Tensor, zeros: torch.Tensor
+) -> torch.Tensor:
     """Dequantize per-channel keys — GPU-native, zero-copy."""
     return (quantized.float() * scales.unsqueeze(2) + zeros.unsqueeze(2)).half()
 
 
 def gpu_kivi_decompress_values(
-    quantized: "torch.Tensor", scales: "torch.Tensor", zeros: "torch.Tensor"
-) -> "torch.Tensor":
+    quantized: torch.Tensor, scales: torch.Tensor, zeros: torch.Tensor
+) -> torch.Tensor:
     """Dequantize per-token values — GPU-native, zero-copy."""
     return (quantized.float() * scales.unsqueeze(3) + zeros.unsqueeze(3)).half()
 
@@ -163,8 +169,8 @@ def gpu_kivi_decompress_values(
 
 
 def gpu_int4_compress(
-    x: "torch.Tensor", group_size: int = 128
-) -> tuple["torch.Tensor", "torch.Tensor", "torch.Tensor", list[int]]:
+    x: torch.Tensor, group_size: int = 128
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, list[int]]:
     """Per-group asymmetric INT4 quantization — GPU-native, zero-copy.
 
     Flattens, pads to group_size multiple, quantizes to [0,15], packs 2 per byte.
@@ -196,7 +202,10 @@ def gpu_int4_compress(
     zeros = gmin
 
     # Quantize
-    quantized = ((grouped - zeros.unsqueeze(1)) / scales.unsqueeze(1)).round().clamp(0, 15).to(torch.uint8)
+    quantized = (
+        ((grouped - zeros.unsqueeze(1)) / scales.unsqueeze(1))
+        .round().clamp(0, 15).to(torch.uint8)
+    )
     flat_q = quantized.reshape(-1)
 
     # Pack 2 values per byte on GPU
@@ -210,12 +219,12 @@ def gpu_int4_compress(
 
 
 def gpu_int4_decompress(
-    packed: "torch.Tensor",
-    scales: "torch.Tensor",
-    zeros: "torch.Tensor",
+    packed: torch.Tensor,
+    scales: torch.Tensor,
+    zeros: torch.Tensor,
     original_shape: list[int],
     group_size: int = 128,
-) -> "torch.Tensor":
+) -> torch.Tensor:
     """Dequantize packed INT4 back to float — GPU-native, zero-copy.
 
     Args:
@@ -252,8 +261,8 @@ def gpu_int4_decompress(
 
 
 def gpu_fp8_compress(
-    x: "torch.Tensor",
-) -> tuple["torch.Tensor", "torch.Tensor"]:
+    x: torch.Tensor,
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Simulated FP8 E4M3 quantization — GPU-native, zero-copy.
 
     Per-layer: scale = amax / 240, quantize to uint8 via offset+round.
@@ -278,8 +287,8 @@ def gpu_fp8_compress(
 
 
 def gpu_fp8_decompress(
-    quantized: "torch.Tensor", scales: "torch.Tensor"
-) -> "torch.Tensor":
+    quantized: torch.Tensor, scales: torch.Tensor
+) -> torch.Tensor:
     """Dequantize simulated FP8 back to float — GPU-native, zero-copy.
 
     Args:
@@ -300,8 +309,8 @@ def gpu_fp8_decompress(
 
 
 def gpu_cachegen_compress(
-    x: "torch.Tensor", chunk_size: int = 10
-) -> tuple["torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor", "torch.Tensor", list[int]]:
+    x: torch.Tensor, chunk_size: int = 10
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, list[int]]:
     """CacheGen-style anchor+delta compression — GPU-native, zero-copy.
 
     Per (L*H) slice: tokens split into chunks. Token 0 of each chunk is an
@@ -335,7 +344,10 @@ def gpu_cachegen_compress(
     a_rng = torch.where(a_rng == 0, torch.ones_like(a_rng), a_rng)
     a_scales = (a_rng / 255.0).squeeze(1)  # [N*num_chunks]
     a_zeros = a_min.squeeze(1)  # [N*num_chunks]
-    a_quant = ((a_flat - a_zeros.unsqueeze(1)) / a_scales.unsqueeze(1)).round().clamp(0, 255).to(torch.uint8)
+    a_quant = (
+        ((a_flat - a_zeros.unsqueeze(1)) / a_scales.unsqueeze(1))
+        .round().clamp(0, 255).to(torch.uint8)
+    )
 
     # Compute deltas: for each chunk, subtract anchor from non-anchor tokens
     # Build expanded anchors for subtraction
@@ -351,19 +363,26 @@ def gpu_cachegen_compress(
     delta_mask = ~is_anchor  # [S]
     delta_indices = all_indices[delta_mask]
 
-    deltas = flat[:, delta_indices, :] - anchors_expanded[:, delta_indices, :]  # [N, num_delta_tokens, D]
+    # [N, num_delta_tokens, D]
+    deltas = (
+        flat[:, delta_indices, :]
+        - anchors_expanded[:, delta_indices, :]
+    )
 
     # INT4 quantize deltas: per-(slice, chunk) groups
     # Reshape deltas to group by chunk for better quantization
     d_flat = deltas.reshape(-1, D)
-    num_d_groups = d_flat.shape[0]
+    d_flat.shape[0]
     d_min = d_flat.amin(dim=1, keepdim=True)
     d_max = d_flat.amax(dim=1, keepdim=True)
     d_rng = d_max - d_min
     d_rng = torch.where(d_rng == 0, torch.ones_like(d_rng), d_rng)
     d_scales = (d_rng / 15.0).squeeze(1)
     d_zeros = d_min.squeeze(1)
-    d_quant = ((d_flat - d_zeros.unsqueeze(1)) / d_scales.unsqueeze(1)).round().clamp(0, 15).to(torch.uint8)
+    d_quant = (
+        ((d_flat - d_zeros.unsqueeze(1)) / d_scales.unsqueeze(1))
+        .round().clamp(0, 15).to(torch.uint8)
+    )
 
     # Pack deltas: 2 values per byte
     d_flat_q = d_quant.reshape(-1)
@@ -375,15 +394,15 @@ def gpu_cachegen_compress(
 
 
 def gpu_cachegen_decompress(
-    a_quant: "torch.Tensor",
-    a_scales: "torch.Tensor",
-    a_zeros: "torch.Tensor",
-    delta_packed: "torch.Tensor",
-    d_scales: "torch.Tensor",
-    d_zeros: "torch.Tensor",
+    a_quant: torch.Tensor,
+    a_scales: torch.Tensor,
+    a_zeros: torch.Tensor,
+    delta_packed: torch.Tensor,
+    d_scales: torch.Tensor,
+    d_zeros: torch.Tensor,
     original_shape: list[int],
     chunk_size: int = 10,
-) -> "torch.Tensor":
+) -> torch.Tensor:
     """Decompress CacheGen anchor+delta — GPU-native, zero-copy.
 
     Args:
@@ -410,7 +429,11 @@ def gpu_cachegen_decompress(
     # Unpack deltas
     high = (delta_packed >> 4) & 0x0F
     low = delta_packed & 0x0F
-    d_unpacked = torch.empty(delta_packed.numel() * 2, dtype=torch.uint8, device=delta_packed.device)
+    d_unpacked = torch.empty(
+        delta_packed.numel() * 2,
+        dtype=torch.uint8,
+        device=delta_packed.device,
+    )
     d_unpacked[0::2] = high
     d_unpacked[1::2] = low
 
@@ -421,7 +444,10 @@ def gpu_cachegen_decompress(
     d_flat = d_unpacked[:total_delta_elements].reshape(-1, D).float()
 
     # Dequantize deltas
-    deltas = d_flat * d_scales[:d_flat.shape[0]].unsqueeze(1) + d_zeros[:d_flat.shape[0]].unsqueeze(1)
+    deltas = (
+        d_flat * d_scales[:d_flat.shape[0]].unsqueeze(1)
+        + d_zeros[:d_flat.shape[0]].unsqueeze(1)
+    )
     deltas = deltas.reshape(N, num_delta_tokens, D)
 
     # Reconstruct
@@ -446,8 +472,8 @@ def gpu_cachegen_decompress(
 
 
 def gpu_cascade_compress(
-    keys: "torch.Tensor",
-    values: "torch.Tensor",
+    keys: torch.Tensor,
+    values: torch.Tensor,
     keep_ratio: float = 0.5,
     group_size: int = 128,
 ) -> tuple:
@@ -506,18 +532,18 @@ def gpu_cascade_compress(
 
 
 def gpu_cascade_decompress(
-    k_packed: "torch.Tensor",
-    k_scales: "torch.Tensor",
-    k_zeros: "torch.Tensor",
+    k_packed: torch.Tensor,
+    k_scales: torch.Tensor,
+    k_zeros: torch.Tensor,
     k_pruned_shape: list[int],
-    v_packed: "torch.Tensor",
-    v_scales: "torch.Tensor",
-    v_zeros: "torch.Tensor",
+    v_packed: torch.Tensor,
+    v_scales: torch.Tensor,
+    v_zeros: torch.Tensor,
     v_pruned_shape: list[int],
-    keep_indices: "torch.Tensor",
+    keep_indices: torch.Tensor,
     original_shape: list[int],
     group_size: int = 128,
-) -> tuple["torch.Tensor", "torch.Tensor"]:
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Decompress cascade: INT4 decompress, then scatter back — GPU-native.
 
     Returns:
@@ -544,8 +570,8 @@ def gpu_cascade_decompress(
 
 
 def gpu_palu_compress(
-    x: "torch.Tensor", rank_ratio: float = 0.25
-) -> tuple["torch.Tensor", "torch.Tensor", list[int], int]:
+    x: torch.Tensor, rank_ratio: float = 0.25
+) -> tuple[torch.Tensor, torch.Tensor, list[int], int]:
     """Truncated SVD low-rank compression — GPU-native, zero-copy.
 
     Per (L*H) slice: SVD → truncate to rank → store US and Vt.
@@ -575,10 +601,10 @@ def gpu_palu_compress(
 
 
 def gpu_palu_decompress(
-    US: "torch.Tensor",
-    Vt: "torch.Tensor",
+    US: torch.Tensor,
+    Vt: torch.Tensor,
     original_shape: list[int],
-) -> "torch.Tensor":
+) -> torch.Tensor:
     """Reconstruct from SVD factors — GPU-native, zero-copy.
 
     Args:
@@ -683,10 +709,14 @@ class TorchUniformInt8Compressor(BaseCompressor):
         device = _get_device()
 
         k_quant = torch.from_numpy(
-            np.frombuffer(compressed.data[:key_len], dtype=np.int8).reshape(meta["key_shape"]).copy()
+            np.frombuffer(
+                compressed.data[:key_len], dtype=np.int8
+            ).reshape(meta["key_shape"]).copy()
         ).to(device)
         v_quant = torch.from_numpy(
-            np.frombuffer(compressed.data[key_len:], dtype=np.int8).reshape(meta["val_shape"]).copy()
+            np.frombuffer(
+                compressed.data[key_len:], dtype=np.int8
+            ).reshape(meta["val_shape"]).copy()
         ).to(device)
         k_scales = torch.tensor(meta["k_scales"], dtype=torch.float32, device=device)
         v_scales = torch.tensor(meta["v_scales"], dtype=torch.float32, device=device)
@@ -793,16 +823,24 @@ class TorchKiviCompressor(BaseCompressor):
         ).to(device)
 
         k_scales = torch.from_numpy(
-            np.frombuffer(buf[vp_end:ks_end], dtype=np.float32).reshape(meta["k_scales_shape"]).copy()
+            np.frombuffer(
+                buf[vp_end:ks_end], dtype=np.float32
+            ).reshape(meta["k_scales_shape"]).copy()
         ).to(device)
         v_scales = torch.from_numpy(
-            np.frombuffer(buf[ks_end:vs_end], dtype=np.float32).reshape(meta["v_scales_shape"]).copy()
+            np.frombuffer(
+                buf[ks_end:vs_end], dtype=np.float32
+            ).reshape(meta["v_scales_shape"]).copy()
         ).to(device)
         k_zeros = torch.from_numpy(
-            np.frombuffer(buf[vs_end:kz_end], dtype=np.float32).reshape(meta["k_scales_shape"]).copy()
+            np.frombuffer(
+                buf[vs_end:kz_end], dtype=np.float32
+            ).reshape(meta["k_scales_shape"]).copy()
         ).to(device)
         v_zeros = torch.from_numpy(
-            np.frombuffer(buf[kz_end:], dtype=np.float32).reshape(meta["v_scales_shape"]).copy()
+            np.frombuffer(
+                buf[kz_end:], dtype=np.float32
+            ).reshape(meta["v_scales_shape"]).copy()
         ).to(device)
 
         keys = gpu_kivi_decompress_keys(k_quant, k_scales, k_zeros)

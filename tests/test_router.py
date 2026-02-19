@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
-from kvshuttle.router.features import RouterInput
 from kvshuttle.router.evaluator import compute_regret, evaluate_router
+from kvshuttle.router.features import RouterInput
 from kvshuttle.router.learned_router import LearnedRouter
 
 

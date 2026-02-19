@@ -22,7 +22,10 @@ from kvshuttle.compression.registry import register
 
 def _require_mlx() -> None:
     if not _HAS_MLX:
-        raise RuntimeError("MLX is required for Metal-accelerated compressors. Install with: pip install mlx")
+        raise RuntimeError(
+            "MLX is required for Metal-accelerated compressors."
+            " Install with: pip install mlx"
+        )
 
 
 # ---------------------------------------------------------------------------

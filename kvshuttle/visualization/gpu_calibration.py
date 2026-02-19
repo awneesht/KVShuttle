@@ -130,8 +130,14 @@ def plot_pipeline_comparison(
         seq = [e["sequential_speedup"] for e in entries]
         pipe = [e["pipelined_speedup"] for e in entries]
 
-        ax.semilogx(bws, seq, "-o", label="Sequential", linewidth=2, markersize=7, color="steelblue")
-        ax.semilogx(bws, pipe, "-s", label="Pipelined", linewidth=2, markersize=7, color="darkorange")
+        ax.semilogx(
+            bws, seq, "-o", label="Sequential",
+            linewidth=2, markersize=7, color="steelblue",
+        )
+        ax.semilogx(
+            bws, pipe, "-s", label="Pipelined",
+            linewidth=2, markersize=7, color="darkorange",
+        )
         ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.6, linewidth=1.5, label="Break-even")
 
         # Shade beneficial region
@@ -252,8 +258,14 @@ def plot_multi_gpu_speedup(
     colors = plt.cm.Set2(np.linspace(0, 1, max(n_gpus, 8)))
 
     for gi, gpu_name in enumerate(gpu_names):
-        comp_sp = [gpu_data[gpu_name].get(c, {}).get("compress_speedup", 0) for c in all_compressors]
-        dec_sp = [gpu_data[gpu_name].get(c, {}).get("decompress_speedup", 0) for c in all_compressors]
+        comp_sp = [
+            gpu_data[gpu_name].get(c, {}).get("compress_speedup", 0)
+            for c in all_compressors
+        ]
+        dec_sp = [
+            gpu_data[gpu_name].get(c, {}).get("decompress_speedup", 0)
+            for c in all_compressors
+        ]
         offset = (gi - n_gpus / 2 + 0.5) * width
 
         axes[0].bar(x + offset, comp_sp, width, label=gpu_name, color=colors[gi], alpha=0.85)

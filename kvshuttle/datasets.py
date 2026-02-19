@@ -66,8 +66,8 @@ def load_dataset_prompts(
             f"Supported: {list(_DATASET_CONFIGS.keys())}"
         )
 
-    from datasets import load_dataset
     import numpy as np
+    from datasets import load_dataset
 
     cfg = _DATASET_CONFIGS[dataset_name]
     text_field = cfg["text_field"]

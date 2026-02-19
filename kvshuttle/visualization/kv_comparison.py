@@ -36,8 +36,8 @@ def plot_kv_comparison(
     v_vals = [val_cosine_sims[n] for n in names]
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    bars1 = ax.bar(x - width / 2, k_vals, width, label="Keys", color="#2196F3")
-    bars2 = ax.bar(x + width / 2, v_vals, width, label="Values", color="#FF9800")
+    ax.bar(x - width / 2, k_vals, width, label="Keys", color="#2196F3")
+    ax.bar(x + width / 2, v_vals, width, label="Values", color="#FF9800")
 
     ax.set_ylabel("Mean Cosine Similarity", fontsize=12)
     ax.set_title(title, fontsize=14)

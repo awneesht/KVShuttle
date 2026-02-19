@@ -17,7 +17,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from kvshuttle.compression.registry import get_compressor
-from kvshuttle.transfer.serializer import serialize, deserialize
+from kvshuttle.transfer.serializer import deserialize, serialize
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +86,11 @@ class KVShuttleConnector:
         self._last_stats = TransferStats(
             original_bytes=original_bytes,
             wire_bytes=len(wire_bytes),
-            compression_ratio=original_bytes / len(wire_bytes) if len(wire_bytes) > 0 else float("inf"),
+            compression_ratio=(
+                original_bytes / len(wire_bytes)
+                if len(wire_bytes) > 0
+                else float("inf")
+            ),
             compressor_name=self.compressor.name,
         )
 

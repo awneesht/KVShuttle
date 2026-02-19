@@ -69,7 +69,11 @@ def measure_tcp_transfer(
                 conn, _ = server_sock.accept()
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
                 # Set large receive buffer
-                conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, min(payload_size, 16 * 1024 * 1024))
+                conn.setsockopt(
+                    socket.SOL_SOCKET,
+                    socket.SO_RCVBUF,
+                    min(payload_size, 16 * 1024 * 1024),
+                )
                 while len(received) < payload_size:
                     chunk = conn.recv(min(payload_size - len(received), 1024 * 1024))
                     if not chunk:
@@ -88,7 +92,11 @@ def measure_tcp_transfer(
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         # Set large send buffer
-        client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, min(payload_size, 16 * 1024 * 1024))
+        client_sock.setsockopt(
+            socket.SOL_SOCKET,
+            socket.SO_SNDBUF,
+            min(payload_size, 16 * 1024 * 1024),
+        )
 
         t_connect_start = time.perf_counter_ns()
         client_sock.connect((host, actual_port))

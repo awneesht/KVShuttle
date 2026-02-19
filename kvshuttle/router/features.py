@@ -43,7 +43,10 @@ class RouterInput:
             np.log2(self.prompt_length + 1),
             np.log2(self.kv_cache_size_bytes + 1),
             np.log2(self.available_bandwidth_gbps + 0.01),
-            self.kv_cache_size_bytes / (self.available_bandwidth_gbps * 1e9 / 8 + 1e-9),  # raw xfer s
+            # raw xfer seconds
+            self.kv_cache_size_bytes / (
+                self.available_bandwidth_gbps * 1e9 / 8 + 1e-9
+            ),
         ], dtype=np.float32)
 
     @staticmethod
