@@ -1,0 +1,327 @@
+\documentclass{article}
+
+% NeurIPS workshop style
+\usepackage[preprint,nonatbib]{neurips_2024}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{subcaption}
+
+\title{KVShuttle: When and How to Compress KV Caches\\for Disaggregated LLM Serving}
+
+\author{
+  Awneesh Verma \\
+  \texttt{awneeshtiwari@gmail.com} \\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Disaggregated prefill/decode serving separates LLM inference across GPUs, creating a KV cache transfer bottleneck between them. While numerous KV cache compression methods exist, they were designed for memory reduction---not transfer optimization---and have never been compared under transfer-realistic conditions. We present \textbf{KVShuttle}, the first systematic benchmark evaluating 14 compression strategies across 6 models, measuring the full compress--transfer--decompress pipeline with GPU-calibrated timing on Tesla T4 and A100 GPUs. We find that: (1) the optimal strategy depends strongly on network bandwidth and model architecture---no single method dominates; (2) without GPU-accelerated kernels, compression only helps below 1\,Gbps; with GPU pipelining, the break-even extends to 50--100\,Gbps; (3) cosine similarity is a poor predictor of generation quality---INT4 achieves 0.99 cosine similarity yet produces near-random output on some models; (4) model sensitivity varies dramatically, with Qwen models suffering catastrophic failure under INT4 while Llama/Mistral maintain~$>$95\% token agreement. Based on these findings, we provide a practitioner decision framework and release our benchmark toolkit at \url{https://github.com/awneesht/KVShuttle}.
+\end{abstract}
+
+%===================================================================
+\section{Introduction}
+%===================================================================
+
+Disaggregated prefill/decode serving~\cite{zhong2024distserve, patel2024splitwise} has become the standard architecture for production LLM inference, separating compute-intensive prefill from memory-bound decode onto specialized GPU pools. This separation introduces a new bottleneck: the KV cache computed during prefill must be transferred to the decode GPU before generation can begin.
+
+For a Llama-3.1-8B model with a 2048-token prompt, the KV cache is 128\,MB in FP16. At 10\,Gbps Ethernet, this transfer takes over 100\,ms---comparable to the prefill computation itself. As prompt lengths grow with long-context applications, KV cache transfer increasingly dominates end-to-end latency.
+
+Numerous KV cache compression methods have been proposed~\cite{liu2024kivi, liu2024cachegen, hooper2024kvquant}, but they were designed to reduce \emph{memory footprint} during inference, not to optimize \emph{network transfer}. A method that halves KV cache size is only beneficial for transfer if its compression and decompression overhead is less than the transfer time saved---a condition that depends on network bandwidth, GPU compute speed, and whether compression can be pipelined with transfer.
+
+No prior work systematically evaluates compression methods through this transfer lens. We address this gap with KVShuttle, contributing:
+
+\begin{enumerate}
+    \item \textbf{A unified benchmark} of 14 compression strategies spanning quantization, low-rank projection, token pruning, and hybrid methods, evaluated across 6 models (3B--8B parameters) with over 7{,}000 experimental data points.
+    \item \textbf{GPU-calibrated timing} with zero-copy CUDA Event measurement on Tesla T4 and A100 GPUs, showing 34--355$\times$ speedup over CPU baselines.
+    \item \textbf{End-to-end generation quality metrics} (perplexity delta and token agreement) that reveal cosine similarity's inadequacy as a quality proxy.
+    \item \textbf{A practitioner decision framework} with break-even bandwidth analysis and a compressor selection flowchart.
+\end{enumerate}
+
+%===================================================================
+\section{Background and Motivation}
+%===================================================================
+
+\paragraph{Disaggregated serving.} In disaggregated LLM serving, prefill and decode run on separate GPUs~\cite{zhong2024distserve, patel2024splitwise}. After prefill computes the KV cache for a prompt, the cache must be transmitted to a decode GPU via the datacenter network (typically 10--400\,Gbps). The decode GPU then continues autoregressive generation using the received cache.
+
+\paragraph{KV cache compression landscape.} Existing methods span several families: \textit{quantization} (uniform INT8/INT4~\cite{dettmers2022gptint8}, KIVI~\cite{liu2024kivi}, KVQuant~\cite{hooper2024kvquant}), \textit{structured coding} (CacheGen~\cite{liu2024cachegen}, HACK~\cite{hack2025}), \textit{low-rank projection} (Palu~\cite{palu2025}), and \textit{token pruning}~\cite{zhang2024h2o}. Each paper evaluates its method in isolation against 2--3 baselines, making cross-method comparison impossible.
+
+\paragraph{The transfer gap.} KVPress~\cite{kvpress2025} benchmarks 25+ token eviction methods but only measures quality and memory---no transfer cost. The closest work is HACK~\cite{hack2025}, which accounts for compress/decompress overhead in its evaluation, but compares only 3 quantization methods. No existing work provides a cross-family benchmark under transfer-realistic conditions with GPU-calibrated timing.
+
+%===================================================================
+\section{KVShuttle Benchmark Design}
+\label{sec:design}
+%===================================================================
+
+\subsection{Compression Strategies}
+
+We evaluate 14 strategies across four families (Table~\ref{tab:compressors}):
+
+\begin{table}[t]
+\centering
+\caption{Compression strategies evaluated in KVShuttle. Ratio, cosine similarity, and token agreement are means over 5 models and 50 WikiText prompts each (250 total evaluations per compressor). $\Delta$ppl = perplexity delta relative to uncompressed.}
+\label{tab:compressors}
+\small
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Strategy} & \textbf{Family} & \textbf{Ratio} & \textbf{Key cos} & \textbf{Token Agr.} & \textbf{$\Delta$ppl} \\
+\midrule
+identity & baseline & 1.0$\times$ & 1.0000 & 1.000 & 0.00 \\
+uniform\_int8 & quantization & 2.0$\times$ & 0.9998 & 0.972 & 0.03 \\
+cachegen & structured & 3.5$\times$ & 0.9914 & 0.925 & 0.81 \\
+kivi\_2bit & quantization & 6.6$\times$ & 0.9465 & 0.737 & 7.50 \\
+palu\_lr & low-rank & 2.6$\times$ & 0.9578 & 0.667 & 24.1 \\
+uniform\_int4 & quantization & 3.6$\times$ & 0.9877 & 0.593 & 13{,}294 \\
+cascade & prune+quant & 7.1$\times$ & 0.7212 & 0.332 & 17{,}982 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Quantization:} Uniform per-tensor INT8 and INT4, FP8 (E4M3), KIVI 2-bit (per-channel keys, per-token values), KVQuant 2-bit (non-uniform with outlier handling). \textbf{Structured coding:} CacheGen (delta encoding with grouped quantization). \textbf{Low-rank:} Palu (SVD projection). \textbf{Token pruning:} Top-$k$ 50\% retention. \textbf{Hybrids:} Cascade (prune 50\% then INT4), mixed precision (INT8 keys / INT4 values), Palu+INT4.
+
+All compressors implement a common \texttt{BaseCompressor} interface operating on NumPy arrays of shape $[\text{layers}, \text{heads}, \text{seq}, \text{dim}]$, ensuring fair comparison independent of framework optimizations.
+
+\subsection{Pipeline Model}
+
+We model the full transfer pipeline as:
+\begin{equation}
+T_{\text{total}} = T_{\text{compress}} + T_{\text{serialize}} + T_{\text{transfer}} + T_{\text{deserialize}} + T_{\text{decompress}}
+\end{equation}
+where $T_{\text{transfer}} = \text{compressed\_size} / \text{bandwidth}$. Compression and transfer can be pipelined (overlapped), reducing total latency:
+\begin{equation}
+T_{\text{pipelined}} = T_{\text{compress}} + T_{\text{transfer}} + T_{\text{decompress}} - T_{\text{overlap}}
+\end{equation}
+
+Compression and decompression times are measured directly (CPU NumPy baselines and GPU PyTorch kernels with CUDA Event timing). Transfer time uses an analytical model validated against real TCP localhost measurements across 1\,KB--100\,MB payloads.
+
+\subsection{Models and Evaluation}
+
+We evaluate on 6 instruction-tuned models spanning 3B--8B parameters: Qwen2.5-3B, Llama-3.2-3B, Phi-3.5-mini (3.8B), Qwen2.5-7B, Llama-3.1-8B, and Mistral-7B-v0.3. Models are loaded in FP16 via HuggingFace Transformers. KV caches are extracted from 50 WikiText-103 prompts (128--512 tokens).
+
+\textbf{Quality metrics.} Beyond per-element cosine similarity and MSE, we measure \textit{token agreement} (fraction of positions where greedy argmax matches the uncompressed baseline) and \textit{perplexity delta} (change in cross-entropy loss). These require injecting the reconstructed KV cache into the model and running a forward pass on continuation tokens---an evaluation methodology absent from most prior work.
+
+%===================================================================
+\section{Results}
+\label{sec:results}
+%===================================================================
+
+\subsection{Cosine Similarity Is Misleading}
+
+Our most striking finding is that cosine similarity---the standard quality metric in KV compression papers---poorly predicts generation quality. Uniform INT4 achieves 0.988 mean key cosine similarity, yet produces a perplexity delta of 13{,}294 and only 59.3\% token agreement (Table~\ref{tab:compressors}). In contrast, CacheGen at slightly lower cosine similarity (0.991) achieves 92.5\% token agreement and a perplexity delta of only 0.81.
+
+The explanation is that small per-element quantization errors compound through multi-head attention, where keys and queries interact multiplicatively. High element-wise fidelity does not guarantee faithful attention patterns, especially when errors are correlated across heads or layers.
+
+\textbf{Takeaway:} Papers evaluating KV compression via cosine similarity alone risk overstating quality preservation. End-to-end metrics like token agreement and perplexity delta are essential.
+
+\subsection{Model Sensitivity Varies Dramatically}
+
+\begin{table}[t]
+\centering
+\caption{Token agreement by model and compressor. Qwen models suffer catastrophic failure under INT4 quantization while Llama and Mistral remain robust.}
+\label{tab:model_sensitivity}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{INT8} & \textbf{CacheGen} & \textbf{INT4} & \textbf{KIVI} & \textbf{Cascade} & \textbf{Palu} \\
+\midrule
+Qwen2.5-3B & 0.983 & 0.925 & \textcolor{red}{\textbf{0.087}} & 0.664 & \textcolor{red}{\textbf{0.070}} & 0.678 \\
+Phi-3.5-mini & 0.965 & 0.926 & 0.903 & 0.730 & 0.618 & 0.463 \\
+Llama-3.1-8B & 0.977 & 0.962 & 0.951 & 0.766 & 0.413 & 0.720 \\
+Mistral-7B & 0.982 & 0.952 & 0.957 & 0.785 & 0.540 & 0.731 \\
+Qwen2.5-7B & 0.954 & 0.861 & \textcolor{red}{\textbf{0.068}} & 0.739 & \textcolor{red}{\textbf{0.017}} & 0.741 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:model_sensitivity} reveals stark model dependence. Qwen models collapse under INT4 quantization (6.8--8.7\% token agreement, i.e., near-random), while Llama-3.1-8B and Mistral-7B maintain $>$95\% agreement with the same compressor. This sensitivity is not visible in cosine similarity (Qwen INT4 cosine is still 0.98) and would be missed without end-to-end evaluation.
+
+The pattern is consistent: models with fewer KV heads (Qwen uses 2--4 GQA heads) are more sensitive, likely because quantization errors in each head affect a larger fraction of the attention computation.
+
+\subsection{GPU Acceleration Is Essential}
+
+\begin{table}[t]
+\centering
+\caption{GPU kernel speedup over CPU NumPy (mean across sequence lengths and model configs). Without GPU acceleration, compression only helps below 1\,Gbps.}
+\label{tab:gpu_speedup}
+\small
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{\textbf{Tesla T4}} & \multicolumn{2}{c}{\textbf{A100-SXM4}} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+\textbf{Compressor} & \textbf{Comp.} & \textbf{Decomp.} & \textbf{Comp.} & \textbf{Decomp.} \\
+\midrule
+uniform\_int8 & 34$\times$ & 80$\times$ & 190$\times$ & 456$\times$ \\
+kivi\_2bit & 53$\times$ & 68$\times$ & 284$\times$ & 373$\times$ \\
+uniform\_int4 & 63$\times$ & 62$\times$ & 334$\times$ & 311$\times$ \\
+fp8\_e4m3 & 36$\times$ & 64$\times$ & 355$\times$ & 456$\times$ \\
+cachegen & 33$\times$ & 56$\times$ & 106$\times$ & 275$\times$ \\
+cascade & 60$\times$ & 48$\times$ & 276$\times$ & 223$\times$ \\
+palu\_lr & 5$\times$ & 216$\times$ & 8$\times$ & 848$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:gpu_speedup} shows that GPU kernels are 34--355$\times$ faster than CPU NumPy for compression/decompression. This is critical: with CPU-only compression, our model sweep (5{,}040 results across 6 models) shows that only 3 compressors achieve any speedup, and only at 1\,Gbps---the slowest bandwidth tested. At datacenter speeds ($\geq$10\,Gbps), CPU compression overhead exceeds the transfer savings for every method.
+
+Palu is an outlier: SVD-based compression achieves only 5--8$\times$ GPU speedup (matrix decomposition parallelizes poorly), but decompression (a matrix multiply) achieves 216--848$\times$. This asymmetry makes Palu viable only in asymmetric deployment scenarios where the prefill GPU is fast but the network is very slow.
+
+A100 speedups scale roughly linearly with memory bandwidth (A100/T4 bandwidth ratio is 6.4$\times$; observed speedup ratio is 4--6$\times$), suggesting our results generalize to other GPU tiers.
+
+\subsection{Break-Even Bandwidth Analysis}
+
+\begin{table}[t]
+\centering
+\caption{Maximum network bandwidth at which compression reduces total transfer time. Above these thresholds, compression overhead exceeds transfer savings.}
+\label{tab:breakeven}
+\small
+\begin{tabular}{lccc}
+\toprule
+\textbf{Strategy} & \textbf{CPU Seq.} & \textbf{GPU Seq.} & \textbf{GPU Pipelined} \\
+\midrule
+uniform\_int8 & $\leq$1 & $\leq$25 & $\leq$50\,Gbps \\
+kivi\_2bit & $\leq$1 & $\leq$25 & $\leq$50\,Gbps \\
+uniform\_int4 & --- & $\leq$25 & $\leq$50\,Gbps \\
+fp8\_e4m3 & --- & $\leq$10 & $\leq$50\,Gbps \\
+cachegen & $\leq$1 & $\leq$10 & $\leq$25\,Gbps \\
+cascade & --- & $\leq$50 & $\leq$100\,Gbps \\
+palu\_lr & --- & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:breakeven} shows the maximum bandwidth at which each strategy is beneficial. With GPU-pipelined execution, uniform INT8, KIVI, INT4, and FP8 break even at $\sim$50\,Gbps---covering most Ethernet-based datacenter networks. Cascade (prune+quantize) extends to 100\,Gbps due to its high compression ratio (7.1$\times$), though at severe quality cost. Palu never achieves a net speedup due to its SVD compression bottleneck.
+
+\textbf{Practical implication:} At NVLink speeds ($\geq$400\,Gbps), no compression is beneficial. For InfiniBand (100--200\,Gbps), only cascade might help, but its quality loss is unacceptable for most applications. Compression is most valuable on Ethernet networks (10--50\,Gbps), where uniform INT8 provides a 2$\times$ size reduction with 97\% token agreement.
+
+%===================================================================
+\section{Practitioner Guidelines}
+\label{sec:guidelines}
+%===================================================================
+
+Based on our analysis, we provide actionable recommendations (Figure~\ref{fig:flowchart}):
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\linewidth]{../figures/decision_flowchart.pdf}
+\caption{Decision flowchart for KV cache compression in disaggregated serving. Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 5 models and 50 WikiText prompts.}
+\label{fig:flowchart}
+\end{figure}
+
+\begin{enumerate}
+    \item \textbf{$>$50\,Gbps bandwidth:} Do not compress. Transfer overhead dominates.
+    \item \textbf{Quality-critical applications (TA$>$0.95):} Use uniform INT8. It provides 2$\times$ compression with 97.2\% token agreement and negligible perplexity impact ($\Delta$ppl$=$0.03).
+    \item \textbf{Moderate quality tolerance (TA$>$0.90):} Use CacheGen for 3.5$\times$ compression with 92.5\% token agreement.
+    \item \textbf{Low bandwidth ($<$10\,Gbps):} Consider KIVI 2-bit for 6.6$\times$ compression, accepting 73.7\% token agreement.
+    \item \textbf{Avoid INT4 and cascade for generation tasks} unless the target model has been validated. Qwen models fail catastrophically under these methods.
+\end{enumerate}
+
+%===================================================================
+\section{Limitations}
+%===================================================================
+
+\textbf{Simulated transfer.} Compression and decompression timing is measured on real hardware, but network transfer uses an analytical model ($T = \text{size} / \text{bandwidth}$) validated against TCP localhost measurements. Real networks exhibit protocol overhead, congestion, and variable latency not captured here.
+
+\textbf{Reimplemented compressors.} Our implementations follow published algorithms in NumPy/PyTorch but may differ from original CUDA kernels in absolute speed. Compression ratios and quality metrics, which are our primary focus, are implementation-independent.
+
+\textbf{Models up to 8B.} We evaluate models from 3B to 8B parameters. While KV cache structure scales predictably, disaggregated serving typically targets larger models (70B+) where our absolute timing numbers would differ, though relative compressor rankings should hold.
+
+\textbf{No batching.} We evaluate single-request compression. Batched KV caches could amortize overhead differently, potentially shifting break-even points.
+
+%===================================================================
+\section{Related Work}
+%===================================================================
+
+\textbf{KV cache compression.} KIVI~\cite{liu2024kivi} proposes asymmetric 2-bit quantization with per-channel keys and per-token values. KVQuant~\cite{hooper2024kvquant} uses non-uniform quantization with outlier handling. CacheGen~\cite{liu2024cachegen} applies delta encoding for streaming KV transfer. HACK~\cite{hack2025} performs homomorphic computation on quantized caches to avoid decompression. Each paper evaluates against 2--3 baselines under different conditions, making cross-method comparison impossible.
+
+\textbf{Compression benchmarks.} ``What Must We Give in Return?''~\cite{yuan2024kvbenchmark} benchmarks 10+ methods but measures only quality, not transfer cost. KVPress~\cite{kvpress2025} evaluates 25+ token eviction methods for memory reduction---no transfer evaluation. ``Rethinking KV Cache Compression''~\cite{rethinking2025} critiques existing benchmarks for ignoring throughput under FlashAttention, but focuses on single-GPU serving, not disaggregated transfer.
+
+\textbf{Disaggregated serving.} DistServe~\cite{zhong2024distserve} and Splitwise~\cite{patel2024splitwise} establish the prefill/decode disaggregation paradigm but handle KV transfer via raw RDMA without compression. NVIDIA Dynamo integrates KV routing into production serving. None systematically evaluate compression for the transfer bottleneck.
+
+%===================================================================
+\section{Conclusion}
+%===================================================================
+
+KVShuttle provides the first transfer-oriented benchmark of KV cache compression for disaggregated LLM serving. Our evaluation of 14 strategies across 6 models reveals that: the best compressor depends on bandwidth and model architecture; GPU acceleration is essential for compression to be beneficial at datacenter speeds; and cosine similarity is an unreliable quality proxy. We release our toolkit at \url{https://github.com/awneesht/KVShuttle} to enable reproducible evaluation of future compression methods.
+
+%===================================================================
+% References
+%===================================================================
+
+\begin{thebibliography}{10}
+
+\bibitem{zhong2024distserve}
+Yinmin Zhong, Shengyu Liu, Junda Chen, et al.
+\newblock DistServe: Disaggregating prefill and decoding for goodput-optimized large language model serving.
+\newblock In \emph{OSDI}, 2024.
+
+\bibitem{patel2024splitwise}
+Pratyush Patel, Esha Choukse, Chaojie Zhang, et al.
+\newblock Splitwise: Efficient generative LLM inference using phase splitting.
+\newblock In \emph{ISCA}, 2024.
+
+\bibitem{liu2024kivi}
+Zirui Liu, Jiayi Yuan, Hongye Jin, et al.
+\newblock KIVI: A tuning-free asymmetric 2bit quantization for KV cache.
+\newblock \emph{arXiv preprint arXiv:2402.02750}, 2024.
+
+\bibitem{liu2024cachegen}
+Yuhan Liu, Hanchen Li, Yihua Cheng, et al.
+\newblock CacheGen: KV cache compression and streaming for fast large language model serving.
+\newblock In \emph{SIGCOMM}, 2024.
+
+\bibitem{hooper2024kvquant}
+Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, et al.
+\newblock KVQuant: Towards 10 million context length LLM inference with KV cache quantization.
+\newblock In \emph{NeurIPS}, 2024.
+
+\bibitem{hack2025}
+Jiayi Yao, Hanchen Li, Yuhan Liu, et al.
+\newblock HACK: Homomorphic acceleration of KV cache transfer for disaggregated LLM inference.
+\newblock In \emph{SIGCOMM}, 2025.
+
+\bibitem{palu2025}
+Chi-Chih Chang, Wei-Cheng Lin, et al.
+\newblock Palu: Compressing KV-cache with low-rank projection.
+\newblock In \emph{ICLR}, 2025.
+
+\bibitem{kvpress2025}
+Simon Jegou et al.
+\newblock KVPress: Efficient KV cache compression library.
+\newblock NVIDIA, 2025. \url{https://github.com/NVIDIA/kvpress}.
+
+\bibitem{yuan2024kvbenchmark}
+Jiayi Yuan et al.
+\newblock KV cache compression, but what must we give in return? A comprehensive benchmark of long context capable approaches.
+\newblock \emph{arXiv preprint arXiv:2407.01527}, 2024.
+
+\bibitem{rethinking2025}
+Various authors.
+\newblock Rethinking KV cache compression for large language models.
+\newblock In \emph{MLSys}, 2025.
+
+\bibitem{dettmers2022gptint8}
+Tim Dettmers, Mike Lewis, Younes Belkada, Luke Zettlemoyer.
+\newblock GPT3.int8(): 8-bit matrix multiplication for transformers at scale.
+\newblock In \emph{NeurIPS}, 2022.
+
+\bibitem{zhang2024h2o}
+Zhenyu Zhang, Ying Sheng, et al.
+\newblock H2O: Heavy-hitter oracle for efficient generative inference of large language models.
+\newblock In \emph{NeurIPS}, 2024.
+
+\end{thebibliography}
+
+\end{document}
