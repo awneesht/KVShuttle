@@ -96,7 +96,7 @@ def _tokenize_prompt(tokenizer, prompt: str) -> list[int]:
     Handles all transformers versions: apply_chat_template may return
     List[int], str, dict, or tensor depending on version and tokenizer.
     """
-    if hasattr(tokenizer, "apply_chat_template"):
+    if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template:
         messages = [{"role": "user", "content": prompt}]
         result = tokenizer.apply_chat_template(
             messages, add_generation_prompt=True, tokenize=True
