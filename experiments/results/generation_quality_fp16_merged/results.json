@@ -2,13 +2,13 @@
   "metadata": {
     "experiment": "generation_quality_fp16_merged",
     "backend": "torch",
-    "timestamp": "2026-02-19T11:45:51",
+    "timestamp": "2026-02-23T22:17:19",
     "num_results": 1750,
     "models": [
-      "qwen2.5-3b",
-      "phi-3.5-mini",
       "llama-3.1-8b",
       "mistral-7b",
+      "phi-3.5-mini",
+      "qwen2.5-3b",
       "qwen2.5-7b"
     ],
     "compressors": [
@@ -25,17 +25,26 @@
     ],
     "prompt_source": "wikitext",
     "source_files": {
-      "experiments/results/generation_quality_fp16/results.json": [
-        "qwen2.5-3b",
-        "phi-3.5-mini"
-      ],
-      "experiments/results/generation_quality_fp16_llama/results.json": [
-        "llama-3.1-8b"
-      ],
-      "experiments/results/generation_quality_fp16_7b/results.json": [
-        "mistral-7b",
-        "qwen2.5-7b"
-      ]
+      "/Users/awneesh/Projects/KVChachebenchmarking/experiments/results/generation_quality_fp16/results.json": {
+        "models": [
+          "qwen2.5-3b",
+          "phi-3.5-mini"
+        ],
+        "num_results": 700
+      },
+      "/Users/awneesh/Projects/KVChachebenchmarking/experiments/results/generation_quality_fp16_llama/results.json": {
+        "models": [
+          "llama-3.1-8b"
+        ],
+        "num_results": 350
+      },
+      "/Users/awneesh/Projects/KVChachebenchmarking/experiments/results/generation_quality_fp16_7b/results.json": {
+        "models": [
+          "mistral-7b",
+          "qwen2.5-7b"
+        ],
+        "num_results": 700
+      }
     }
   },
   "results": [

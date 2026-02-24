@@ -1,0 +1,40 @@
+# Experiment 3: Generation quality for 7 compressors missing TA/ppl data
+# Runtime: Colab A100, ~3-4 hrs per model
+# Tests on Llama-3.1-8B + Qwen2.5-3B (one robust, one sensitive)
+experiment:
+  name: generation_quality_fp16_missing7
+  description: "Generation quality for 7 missing compressors on Llama-3.1-8B + Qwen2.5-3B"
+
+backend: torch
+
+models:
+  - llama-3.1-8b
+  - qwen2.5-3b
+
+compressors:
+  - identity
+  - fp8_e4m3
+  - kvquant_2bit
+  - lossless_zstd
+  - lossless_lz4
+  - topk_prune_50
+  - palu_int4
+  - mixed_k8v4
+
+bandwidths_gbps:
+  - 10
+
+prompts:
+  source: wikitext
+  count: 50
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+
+output:
+  dir: experiments/results/generation_quality_fp16_missing7
+  save_per_layer: false

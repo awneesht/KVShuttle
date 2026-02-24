@@ -1,0 +1,51 @@
+# Experiment 2: Full 14-compressor sweep on all 6 models
+# Runtime: CPU-only, can run locally, ~4-6 hrs
+# Extends model_sweep (7 comp) to all 14 compressors
+experiment:
+  name: model_sweep_full14
+  description: "All 14 compressors across all 6 model architectures"
+
+models:
+  - qwen2.5-3b
+  - llama-3.2-3b
+  - phi-3.5-mini
+  - qwen2.5-7b
+  - llama-3.1-8b
+  - mistral-7b
+
+compressors:
+  - identity
+  - lossless_zstd
+  - lossless_lz4
+  - fp8_e4m3
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - kvquant_2bit
+  - palu_lr
+  - topk_prune_50
+  - cascade_prune50_int4
+  - palu_int4
+  - mixed_k8v4
+
+bandwidths_gbps:
+  - 1
+  - 10
+  - 50
+  - 100
+
+prompts:
+  source: synthetic
+  count: 30
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: false
+  generation: false
+
+output:
+  dir: experiments/results/model_sweep_full14
+  save_per_layer: true

@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{Recommended compression strategy by deployment scenario. BW = network bandwidth, TA = token agreement, GPU = GPU-accelerated kernels available.}
+\label{tab:recipe}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Scenario} & \textbf{Conditions} & \textbf{Strategy} & \textbf{Expected TA} \\
+\midrule
+NVLink/IB & BW $\geq$ 100\,Gbps & identity (no compression) & 1.000 \\
+Quality-critical & BW $\leq$ 50\,Gbps, GPU & uniform\_int8 & $\geq$0.95 \\
+Balanced & BW $\leq$ 25\,Gbps, GPU & CacheGen & $\geq$0.90 \\
+Max compression & BW $\leq$ 10\,Gbps, GPU & KIVI 2-bit & $\geq$0.70 \\
+CPU-only & BW $\leq$ 1\,Gbps & uniform\_int8 & $\geq$0.95 \\
+Streaming & Variable BW & CacheGen (delta) & $\geq$0.90 \\
+\bottomrule
+\end{tabular}
+\end{table}

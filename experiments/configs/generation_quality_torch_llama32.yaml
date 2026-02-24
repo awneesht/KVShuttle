@@ -1,0 +1,38 @@
+# Experiment 1: Llama-3.2-3B generation quality (fills the last model gap)
+# Runtime: Colab T4, ~2-3 hrs
+# This is the only model missing from generation_quality_fp16_merged
+experiment:
+  name: generation_quality_fp16
+  description: "Llama-3.2-3B FP16 generation quality on T4 GPU"
+
+backend: torch
+
+models:
+  - llama-3.2-3b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - palu_lr
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 10
+
+prompts:
+  source: wikitext
+  count: 50
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+
+output:
+  dir: experiments/results/generation_quality_fp16_llama32
+  save_per_layer: false

@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\caption{KV cache size (MB, FP16) by model and sequence length. Size = $2 \times L \times H_{kv} \times d \times S \times 2$ bytes, where $L$=layers, $H_{kv}$=KV heads, $d$=head dim, $S$=seq len.}
+\label{tab:kv_sizes}
+\small
+\begin{tabular}{lcccccccc}
+\toprule
+\textbf{Model} & $L$ & $H_{kv}$ & $d$ & \textbf{128} & \textbf{256} & \textbf{512} & \textbf{1024} & \textbf{2048} \\
+\midrule
+  llama-3.1-8b & 32 & 8 & 128 & 16.0 & 32.0 & 64.0 & 128.0 & 256.0 \\
+  llama-3.2-3b & 28 & 8 & 128 & 14.0 & 28.0 & 56.0 & 112.0 & 224.0 \\
+  mistral-7b & 32 & 8 & 128 & 16.0 & 32.0 & 64.0 & 128.0 & 256.0 \\
+  phi-3.5-mini & 32 & 32 & 96 & 48.0 & 96.0 & 192.0 & 384.0 & 768.0 \\
+  qwen2.5-3b & 36 & 2 & 128 & 4.5 & 9.0 & 18.0 & 36.0 & 72.0 \\
+  qwen2.5-7b & 28 & 4 & 128 & 7.0 & 14.0 & 28.0 & 56.0 & 112.0 \\
+\bottomrule
+\end{tabular}
+\end{table}

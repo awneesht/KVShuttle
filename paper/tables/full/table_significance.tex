@@ -1,0 +1,24 @@
+\begin{table}[t]
+\centering
+\caption{Wilcoxon signed-rank tests between compressor pairs on token agreement (50 paired prompts per model, pooled across 5 models). Effect size is Cohen's $d$.}
+\label{tab:significance}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Comparison} & \textbf{$W$} & \textbf{$p$-value} & \textbf{$d$} & \textbf{Sig.} \\
+\midrule
+  cascade\_prune50\_int4 vs.\ identity & 0 & 3.50e-10 & -61.95 & *** \\
+  cascade\_prune50\_int4 vs.\ uniform\_int8 & 0 & 7.49e-10 & -31.61 & *** \\
+  identity vs.\ uniform\_int4 & 0 & 7.54e-10 & 30.89 & *** \\
+  uniform\_int4 vs.\ uniform\_int8 & 0 & 7.55e-10 & -22.60 & *** \\
+  cachegen vs.\ cascade\_prune50\_int4 & 0 & 7.55e-10 & 18.29 & *** \\
+  cascade\_prune50\_int4 vs.\ palu\_lr & 0 & 1.78e-15 & -15.12 & *** \\
+  cachegen vs.\ uniform\_int4 & 0 & 7.55e-10 & 15.02 & *** \\
+  cascade\_prune50\_int4 vs.\ kivi\_2bit & 0 & 7.55e-10 & -12.44 & *** \\
+  palu\_lr vs.\ uniform\_int4 & 0 & 7.54e-10 & 12.39 & *** \\
+  kivi\_2bit vs.\ uniform\_int4 & 0 & 7.55e-10 & 10.57 & *** \\
+  identity vs.\ palu\_lr & 0 & 7.54e-10 & 5.75 & *** \\
+  identity vs.\ kivi\_2bit & 0 & 7.55e-10 & 4.69 & *** \\
+\bottomrule
+\end{tabular}
+\end{table}

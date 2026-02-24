@@ -1,4 +1,4 @@
-\begin{thebibliography}{12}
+\begin{thebibliography}{25}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -21,6 +21,12 @@ Wei Gao, Xinyu Zhou, Peng Sun, Tianwei Zhang, and Yonggang Wen.
 \newblock Rethinking {KV} cache compression for large language models.
 \newblock In \emph{MLSys}, 2025.
 
+\bibitem[Ge et~al.(2024)Ge, Zhang, Liu, Zhang, Han, and Gao]{ge2024fastgen}
+Suyu Ge, Yunan Zhang, Liyuan Liu, Minjia Zhang, Jiawei Han, and Jianfeng Gao.
+\newblock Model tells you what to discard: Adaptive {KV} cache compression for
+  {LLM}s.
+\newblock \emph{ICLR}, 2024.
+
 \bibitem[Hooper et~al.(2024)Hooper, Kim, Mohammadzadeh,
   et~al.]{hooper2024kvquant}
 Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, et~al.
@@ -28,10 +34,27 @@ Coleman Hooper, Sehoon Kim, Hiva Mohammadzadeh, et~al.
   {KV} cache quantization.
 \newblock In \emph{NeurIPS}, 2024.
 
+\bibitem[Hu et~al.(2024)]{hu2024tetriinfer}
+Jinghan Hu et~al.
+\newblock {TetriInfer}: Distributed inference with disaggregated chunked
+  prefill for {LLM}.
+\newblock \emph{arXiv preprint arXiv:2401.11181}, 2024.
+
 \bibitem[Jegou et~al.(2025)]{kvpress2025}
 Simon Jegou et~al.
 \newblock {KVPress}: Efficient {KV} cache compression library.
 \newblock NVIDIA, \url{https://github.com/NVIDIA/kvpress}, 2025.
+
+\bibitem[Kang et~al.(2024)Kang, Zhang, Kundu, et~al.]{kang2024gear}
+Hao Kang, Qingru Zhang, Souvik Kundu, et~al.
+\newblock {GEAR}: An efficient {KV} cache compression recipe for near-lossless
+  generative inference of {LLM}.
+\newblock \emph{arXiv preprint arXiv:2403.05527}, 2024.
+
+\bibitem[Li et~al.(2024)Li, Huang, Yang, et~al.]{li2024snapkv}
+Yuhong Li, Yingbing Huang, Bowen Yang, et~al.
+\newblock {SnapKV}: {LLM} knows what you are looking for before generation.
+\newblock \emph{arXiv preprint arXiv:2404.14469}, 2024.
 
 \bibitem[Liu et~al.(2024{\natexlab{a}})Liu, Li, Cheng, et~al.]{liu2024cachegen}
 Yuhan Liu, Hanchen Li, Yihua Cheng, et~al.
@@ -39,16 +62,69 @@ Yuhan Liu, Hanchen Li, Yihua Cheng, et~al.
   language model serving.
 \newblock In \emph{SIGCOMM}, 2024{\natexlab{a}}.
 
-\bibitem[Liu et~al.(2024{\natexlab{b}})Liu, Yuan, Jin, et~al.]{liu2024kivi}
+\bibitem[Liu et~al.(2024{\natexlab{b}})Liu, Desai, Liao, Wang, Xie, Xu,
+  Kyrillidis, and Shrivastava]{liu2024scissorhands}
+Zichang Liu, Aditya Desai, Fangshuo Liao, Weitao Wang, Victor Xie, Zhaozhuo Xu,
+  Anastasios Kyrillidis, and Anshumali Shrivastava.
+\newblock {ScissorHands}: Exploiting the persistence of importance hypothesis
+  for {LLM} {KV} cache compression at test time.
+\newblock \emph{NeurIPS}, 2024{\natexlab{b}}.
+
+\bibitem[Liu et~al.(2024{\natexlab{c}})Liu, Yuan, Jin, et~al.]{liu2024kivi}
 Zirui Liu, Jiayi Yuan, Hongye Jin, et~al.
 \newblock {KIVI}: A tuning-free asymmetric 2bit quantization for {KV} cache.
-\newblock \emph{arXiv preprint arXiv:2402.02750}, 2024{\natexlab{b}}.
+\newblock \emph{arXiv preprint arXiv:2402.02750}, 2024{\natexlab{c}}.
+
+\bibitem[Merity et~al.(2017)Merity, Xiong, Bradbury, and
+  Socher]{merity2017wikitext}
+Stephen Merity, Caiming Xiong, James Bradbury, and Richard Socher.
+\newblock Pointer sentinel mixture models.
+\newblock In \emph{ICLR}, 2017.
+
+\bibitem[Nawrot et~al.(2024)Nawrot, Lemercier, Urbanevych, Simig, and
+  Ardalani]{nawrot2024dmc}
+Piotr Nawrot, Adrian Lemercier, Andrei Urbanevych, Daniel Simig, and Ehsan
+  Ardalani.
+\newblock Dynamic memory compression: Retrofitting {LLM}s for accelerated
+  inference.
+\newblock \emph{arXiv preprint arXiv:2403.09636}, 2024.
 
 \bibitem[Patel et~al.(2024)Patel, Choukse, Zhang, et~al.]{patel2024splitwise}
 Pratyush Patel, Esha Choukse, Chaojie Zhang, et~al.
 \newblock Splitwise: Efficient generative {LLM} inference using phase
   splitting.
 \newblock In \emph{ISCA}, 2024.
+
+\bibitem[Qin et~al.(2024)Qin, Li, He, et~al.]{qin2024mooncake}
+Ruoyu Qin, Zheming Li, Weiran He, et~al.
+\newblock Mooncake: A {KVCache}-centric disaggregated architecture for {LLM}
+  serving.
+\newblock \emph{arXiv preprint arXiv:2407.00079}, 2024.
+
+\bibitem[Sheng et~al.(2023)Sheng, Zheng, Yuan, et~al.]{sheng2023flexgen}
+Ying Sheng, Lianmin Zheng, Binhang Yuan, et~al.
+\newblock {FlexGen}: High-throughput generative inference of large language
+  models with a single {GPU}.
+\newblock In \emph{ICML}, 2023.
+
+\bibitem[Sun et~al.(2024)Sun, Chang, Bao, et~al.]{sun2024shadowkv}
+Hanshi Sun, Li-Wen Chang, Wenlei Bao, et~al.
+\newblock {ShadowKV}: {KV} cache in shadows for high-throughput long-context
+  {LLM} inference.
+\newblock \emph{arXiv preprint arXiv:2410.21465}, 2024.
+
+\bibitem[Yang et~al.(2024)Yang, Han, Gao, Hu, Zhang, and
+  Zhao]{yang2024pyramidinfer}
+Dongjie Yang, XiaoDong Han, Yan Gao, Yao Hu, Shilin Zhang, and Hai Zhao.
+\newblock {PyramidInfer}: Pyramid {KV} cache compression for high-throughput
+  {LLM} inference.
+\newblock \emph{arXiv preprint arXiv:2405.12532}, 2024.
+
+\bibitem[Yao et~al.(2024)Yao, Li, Liu, et~al.]{yao2024cacheblend}
+Jiayi Yao, Hanchen Li, Yuhan Liu, et~al.
+\newblock {CacheBlend}: Fast large language model serving for {RAG} with cached
+  knowledge fusion.
+\newblock \emph{arXiv preprint arXiv:2405.16444}, 2024.
 
 \bibitem[Yao et~al.(2025)Yao, Li, Liu, et~al.]{hack2025}
 Jiayi Yao, Hanchen Li, Yuhan Liu, et~al.
@@ -61,6 +137,12 @@ Jiayi Yuan et~al.
 \newblock {KV} cache compression, but what must we give in return? {A}
   comprehensive benchmark of long context capable approaches.
 \newblock \emph{arXiv preprint arXiv:2407.01527}, 2024.
+
+\bibitem[Zandieh et~al.(2024)Zandieh, Daliri, and Han]{zandieh2024qjl}
+Amir Zandieh, Majid Daliri, and Insu Han.
+\newblock {QJL}: 1-bit quantized {JL} transform for {KV} cache quantization
+  with zero overhead.
+\newblock \emph{arXiv preprint arXiv:2406.03462}, 2024.
 
 \bibitem[Zhang et~al.(2024)Zhang, Sheng, et~al.]{zhang2024h2o}
 Zhenyu Zhang, Ying Sheng, et~al.

@@ -1,3 +1,5 @@
+% === Disaggregated / Distributed Serving ===
+
 @inproceedings{zhong2024distserve,
   title={{DistServe}: Disaggregating Prefill and Decoding for Goodput-Optimized Large Language Model Serving},
   author={Zhong, Yinmin and Liu, Shengyu and Chen, Junda and others},
@@ -12,17 +14,33 @@
   year={2024}
 }
 
+@article{qin2024mooncake,
+  title={Mooncake: A {KVCache}-Centric Disaggregated Architecture for {LLM} Serving},
+  author={Qin, Ruoyu and Li, Zheming and He, Weiran and others},
+  journal={arXiv preprint arXiv:2407.00079},
+  year={2024}
+}
+
+@article{hu2024tetriinfer,
+  title={{TetriInfer}: Distributed Inference with Disaggregated Chunked Prefill for {LLM}},
+  author={Hu, Jinghan and others},
+  journal={arXiv preprint arXiv:2401.11181},
+  year={2024}
+}
+
+% === Quantization ===
+
+@inproceedings{dettmers2022gptint8,
+  title={{GPT3.int8()}: 8-bit Matrix Multiplication for Transformers at Scale},
+  author={Dettmers, Tim and Lewis, Mike and Belkada, Younes and Zettlemoyer, Luke},
+  booktitle={NeurIPS},
+  year={2022}
+}
+
 @article{liu2024kivi,
   title={{KIVI}: A Tuning-Free Asymmetric 2bit Quantization for {KV} Cache},
   author={Liu, Zirui and Yuan, Jiayi and Jin, Hongye and others},
   journal={arXiv preprint arXiv:2402.02750},
-  year={2024}
-}
-
-@inproceedings{liu2024cachegen,
-  title={{CacheGen}: {KV} Cache Compression and Streaming for Fast Large Language Model Serving},
-  author={Liu, Yuhan and Li, Hanchen and Cheng, Yihua and others},
-  booktitle={SIGCOMM},
   year={2024}
 }
 
@@ -33,6 +51,36 @@
   year={2024}
 }
 
+@article{kang2024gear,
+  title={{GEAR}: An Efficient {KV} Cache Compression Recipe for Near-Lossless Generative Inference of {LLM}},
+  author={Kang, Hao and Zhang, Qingru and Kundu, Souvik and others},
+  journal={arXiv preprint arXiv:2403.05527},
+  year={2024}
+}
+
+@article{zandieh2024qjl,
+  title={{QJL}: 1-Bit Quantized {JL} Transform for {KV} Cache Quantization with Zero Overhead},
+  author={Zandieh, Amir and Daliri, Majid and Han, Insu},
+  journal={arXiv preprint arXiv:2406.03462},
+  year={2024}
+}
+
+@inproceedings{sheng2023flexgen,
+  title={{FlexGen}: High-Throughput Generative Inference of Large Language Models with a Single {GPU}},
+  author={Sheng, Ying and Zheng, Lianmin and Yuan, Binhang and others},
+  booktitle={ICML},
+  year={2023}
+}
+
+% === Structured / Neural Coding ===
+
+@inproceedings{liu2024cachegen,
+  title={{CacheGen}: {KV} Cache Compression and Streaming for Fast Large Language Model Serving},
+  author={Liu, Yuhan and Li, Hanchen and Cheng, Yihua and others},
+  booktitle={SIGCOMM},
+  year={2024}
+}
+
 @inproceedings{hack2025,
   title={{HACK}: Homomorphic Acceleration of {KV} Cache Transfer for Disaggregated {LLM} Inference},
   author={Yao, Jiayi and Li, Hanchen and Liu, Yuhan and others},
@@ -40,12 +88,74 @@
   year={2025}
 }
 
+@article{yao2024cacheblend,
+  title={{CacheBlend}: Fast Large Language Model Serving for {RAG} with Cached Knowledge Fusion},
+  author={Yao, Jiayi and Li, Hanchen and Liu, Yuhan and others},
+  journal={arXiv preprint arXiv:2405.16444},
+  year={2024}
+}
+
+% === Low-Rank / Projection ===
+
 @inproceedings{palu2025,
   title={Palu: Compressing {KV}-Cache with Low-Rank Projection},
   author={Chang, Chi-Chih and Lin, Wei-Cheng and others},
   booktitle={ICLR},
   year={2025}
 }
+
+@article{nawrot2024dmc,
+  title={Dynamic Memory Compression: Retrofitting {LLM}s for Accelerated Inference},
+  author={Nawrot, Piotr and Lemercier, Adrian and Urbanevych, Andrei and Simig, Daniel and Ardalani, Ehsan},
+  journal={arXiv preprint arXiv:2403.09636},
+  year={2024}
+}
+
+@article{sun2024shadowkv,
+  title={{ShadowKV}: {KV} Cache in Shadows for High-Throughput Long-Context {LLM} Inference},
+  author={Sun, Hanshi and Chang, Li-Wen and Bao, Wenlei and others},
+  journal={arXiv preprint arXiv:2410.21465},
+  year={2024}
+}
+
+% === Token Pruning / Eviction ===
+
+@inproceedings{zhang2024h2o,
+  title={{H2O}: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models},
+  author={Zhang, Zhenyu and Sheng, Ying and others},
+  booktitle={NeurIPS},
+  year={2024}
+}
+
+@article{li2024snapkv,
+  title={{SnapKV}: {LLM} Knows What You are Looking for Before Generation},
+  author={Li, Yuhong and Huang, Yingbing and Yang, Bowen and others},
+  journal={arXiv preprint arXiv:2404.14469},
+  year={2024}
+}
+
+@article{yang2024pyramidinfer,
+  title={{PyramidInfer}: Pyramid {KV} Cache Compression for High-throughput {LLM} Inference},
+  author={Yang, Dongjie and Han, XiaoDong and Gao, Yan and Hu, Yao and Zhang, Shilin and Zhao, Hai},
+  journal={arXiv preprint arXiv:2405.12532},
+  year={2024}
+}
+
+@article{liu2024scissorhands,
+  title={{ScissorHands}: Exploiting the Persistence of Importance Hypothesis for {LLM} {KV} Cache Compression at Test Time},
+  author={Liu, Zichang and Desai, Aditya and Liao, Fangshuo and Wang, Weitao and Xie, Victor and Xu, Zhaozhuo and Kyrillidis, Anastasios and Shrivastava, Anshumali},
+  journal={NeurIPS},
+  year={2024}
+}
+
+@article{ge2024fastgen,
+  title={Model Tells You What to Discard: Adaptive {KV} Cache Compression for {LLM}s},
+  author={Ge, Suyu and Zhang, Yunan and Liu, Liyuan and Zhang, Minjia and Han, Jiawei and Gao, Jianfeng},
+  journal={ICLR},
+  year={2024}
+}
+
+% === Benchmarks ===
 
 @misc{kvpress2025,
   title={{KVPress}: Efficient {KV} Cache Compression Library},
@@ -68,16 +178,11 @@
   year={2025}
 }
 
-@inproceedings{dettmers2022gptint8,
-  title={{GPT3.int8()}: 8-bit Matrix Multiplication for Transformers at Scale},
-  author={Dettmers, Tim and Lewis, Mike and Belkada, Younes and Zettlemoyer, Luke},
-  booktitle={NeurIPS},
-  year={2022}
-}
+% === Datasets ===
 
-@inproceedings{zhang2024h2o,
-  title={{H2O}: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models},
-  author={Zhang, Zhenyu and Sheng, Ying and others},
-  booktitle={NeurIPS},
-  year={2024}
+@inproceedings{merity2017wikitext,
+  title={Pointer Sentinel Mixture Models},
+  author={Merity, Stephen and Xiong, Caiming and Bradbury, James and Socher, Richard},
+  booktitle={ICLR},
+  year={2017}
 }

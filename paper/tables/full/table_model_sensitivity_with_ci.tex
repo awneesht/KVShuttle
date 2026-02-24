@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\caption{Token agreement by model and compressor with 95\% bootstrap confidence intervals (50 prompts per cell). \textcolor{red}{\textbf{Red}} indicates catastrophic failure ($<$0.20).}
+\label{tab:model_sensitivity_ci}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+\textbf{Model} & \textbf{uniform\_int8} & \textbf{cachegen} & \textbf{uniform\_int4} & \textbf{kivi\_2bit} & \textbf{palu\_lr} & \textbf{cascade\_prune50\_int4} \\
+\midrule
+  llama-3.1-8b & 0.977 \tiny{[0.97, 0.98]} & 0.962 \tiny{[0.95, 0.97]} & 0.951 \tiny{[0.94, 0.96]} & 0.766 \tiny{[0.75, 0.78]} & 0.720 \tiny{[0.70, 0.74]} & 0.413 \tiny{[0.39, 0.44]} \\
+  mistral-7b & 0.982 \tiny{[0.98, 0.99]} & 0.952 \tiny{[0.94, 0.96]} & 0.957 \tiny{[0.95, 0.97]} & 0.785 \tiny{[0.76, 0.80]} & 0.731 \tiny{[0.71, 0.75]} & 0.540 \tiny{[0.51, 0.57]} \\
+  phi-3.5-mini & 0.965 \tiny{[0.96, 0.97]} & 0.926 \tiny{[0.91, 0.94]} & 0.903 \tiny{[0.89, 0.92]} & 0.730 \tiny{[0.71, 0.75]} & 0.463 \tiny{[0.43, 0.49]} & 0.618 \tiny{[0.59, 0.64]} \\
+  qwen2.5-3b & 0.983 \tiny{[0.98, 0.99]} & 0.925 \tiny{[0.91, 0.94]} & \textcolor{red}{\textbf{0.087}} \tiny{[0.07, 0.10]} & 0.664 \tiny{[0.64, 0.69]} & 0.678 \tiny{[0.66, 0.70]} & \textcolor{red}{\textbf{0.070}} \tiny{[0.06, 0.09]} \\
+  qwen2.5-7b & 0.954 \tiny{[0.94, 0.96]} & 0.861 \tiny{[0.84, 0.88]} & \textcolor{red}{\textbf{0.068}} \tiny{[0.06, 0.08]} & 0.738 \tiny{[0.72, 0.76]} & 0.741 \tiny{[0.72, 0.76]} & \textcolor{red}{\textbf{0.017}} \tiny{[0.01, 0.02]} \\
+\bottomrule
+\end{tabular}
+\end{table*}
