@@ -4,3 +4,9 @@ __pycache__/
 .DS_Store
 .claude/
 *.zip
+
+# LaTeX build artifacts
+paper/latex/*.aux
+paper/latex/*.log
+paper/latex/*.out
+paper/latex/*.blg
