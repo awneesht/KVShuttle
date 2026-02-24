@@ -5,11 +5,6 @@
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[authors(2025)]{rethinking2025}
-Various authors.
-\newblock Rethinking {KV} cache compression for large language models.
-\newblock In \emph{MLSys}, 2025.
-
 \bibitem[Chang et~al.(2025)Chang, Lin, et~al.]{palu2025}
 Chi-Chih Chang, Wei-Cheng Lin, et~al.
 \newblock Palu: Compressing {KV}-cache with low-rank projection.
@@ -20,6 +15,11 @@ Chi-Chih Chang, Wei-Cheng Lin, et~al.
 Tim Dettmers, Mike Lewis, Younes Belkada, and Luke Zettlemoyer.
 \newblock {GPT3.int8()}: 8-bit matrix multiplication for transformers at scale.
 \newblock In \emph{NeurIPS}, 2022.
+
+\bibitem[Gao et~al.(2025)Gao, Zhou, Sun, Zhang, and Wen]{rethinking2025}
+Wei Gao, Xinyu Zhou, Peng Sun, Tianwei Zhang, and Yonggang Wen.
+\newblock Rethinking {KV} cache compression for large language models.
+\newblock In \emph{MLSys}, 2025.
 
 \bibitem[Hooper et~al.(2024)Hooper, Kim, Mohammadzadeh,
   et~al.]{hooper2024kvquant}

@@ -18,10 +18,8 @@
 
 \title{KVShuttle: When and How to Compress KV Caches\\for Disaggregated LLM Serving}
 
-\author{
-  Awneesh Tiwari \\
-  \texttt{awneeshtiwari@gmail.com} \\
-}
+\author{\name Awneesh Tiwari \email awneeshtiwari@gmail.com \\
+  \addr Independent Researcher}
 
 \begin{document}
 
@@ -35,11 +33,11 @@ Disaggregated prefill/decode serving separates LLM inference across GPUs, creati
 \section{Introduction}
 %===================================================================
 
-Disaggregated prefill/decode serving~\cite{zhong2024distserve, patel2024splitwise} has become the standard architecture for production LLM inference, separating compute-intensive prefill from memory-bound decode onto specialized GPU pools. This separation introduces a new bottleneck: the KV cache computed during prefill must be transferred to the decode GPU before generation can begin.
+Disaggregated prefill/decode serving~\citep{zhong2024distserve, patel2024splitwise} has become the standard architecture for production LLM inference, separating compute-intensive prefill from memory-bound decode onto specialized GPU pools. This separation introduces a new bottleneck: the KV cache computed during prefill must be transferred to the decode GPU before generation can begin.
 
 For a Llama-3.1-8B model with a 2048-token prompt, the KV cache is 128\,MB in FP16. At 10\,Gbps Ethernet, this transfer takes over 100\,ms---comparable to the prefill computation itself. As prompt lengths grow with long-context applications, KV cache transfer increasingly dominates end-to-end latency.
 
-Numerous KV cache compression methods have been proposed~\cite{liu2024kivi, liu2024cachegen, hooper2024kvquant}, but they were designed to reduce \emph{memory footprint} during inference, not to optimize \emph{network transfer}. A method that halves KV cache size is only beneficial for transfer if its compression and decompression overhead is less than the transfer time saved---a condition that depends on network bandwidth, GPU compute speed, and whether compression can be pipelined with transfer.
+Numerous KV cache compression methods have been proposed~\citep{liu2024kivi, liu2024cachegen, hooper2024kvquant}, but they were designed to reduce \emph{memory footprint} during inference, not to optimize \emph{network transfer}. A method that halves KV cache size is only beneficial for transfer if its compression and decompression overhead is less than the transfer time saved---a condition that depends on network bandwidth, GPU compute speed, and whether compression can be pipelined with transfer.
 
 No prior work systematically evaluates compression methods through this transfer lens. I address this gap with KVShuttle, contributing:
 
@@ -54,11 +52,11 @@ No prior work systematically evaluates compression methods through this transfer
 \section{Background and Motivation}
 %===================================================================
 
-\paragraph{Disaggregated serving.} In disaggregated LLM serving, prefill and decode run on separate GPUs~\cite{zhong2024distserve, patel2024splitwise}. After prefill computes the KV cache for a prompt, the cache must be transmitted to a decode GPU via the datacenter network (typically 10--400\,Gbps). The decode GPU then continues autoregressive generation using the received cache.
+\paragraph{Disaggregated serving.} In disaggregated LLM serving, prefill and decode run on separate GPUs~\citep{zhong2024distserve, patel2024splitwise}. After prefill computes the KV cache for a prompt, the cache must be transmitted to a decode GPU via the datacenter network (typically 10--400\,Gbps). The decode GPU then continues autoregressive generation using the received cache.
 
-\paragraph{KV cache compression landscape.} Existing methods span several families: \textit{quantization} (uniform INT8/INT4~\cite{dettmers2022gptint8}, KIVI~\cite{liu2024kivi}, KVQuant~\cite{hooper2024kvquant}), \textit{structured coding} (CacheGen~\cite{liu2024cachegen}, HACK~\cite{hack2025}), \textit{low-rank projection} (Palu~\cite{palu2025}), and \textit{token pruning}~\cite{zhang2024h2o}. Each paper evaluates its method in isolation against 2--3 baselines, making cross-method comparison impossible.
+\paragraph{KV cache compression landscape.} Existing methods span several families: \textit{quantization} (uniform INT8/INT4~\citep{dettmers2022gptint8}, KIVI~\citep{liu2024kivi}, KVQuant~\citep{hooper2024kvquant}), \textit{structured coding} (CacheGen~\citep{liu2024cachegen}, HACK~\citep{hack2025}), \textit{low-rank projection} (Palu~\citep{palu2025}), and \textit{token pruning}~\citep{zhang2024h2o}. Each paper evaluates its method in isolation against 2--3 baselines, making cross-method comparison impossible.
 
-\paragraph{The transfer gap.} KVPress~\cite{kvpress2025} benchmarks 25+ token eviction methods but only measures quality and memory---no transfer cost. The closest work is HACK~\cite{hack2025}, which accounts for compress/decompress overhead in its evaluation, but compares only 3 quantization methods. No existing work provides a cross-family benchmark under transfer-realistic conditions with GPU-calibrated timing.
+\paragraph{The transfer gap.} KVPress~\citep{kvpress2025} benchmarks 25+ token eviction methods but only measures quality and memory---no transfer cost. The closest work is HACK~\citep{hack2025}, which accounts for compress/decompress overhead in its evaluation, but compares only 3 quantization methods. No existing work provides a cross-family benchmark under transfer-realistic conditions with GPU-calibrated timing.
 
 %===================================================================
 \section{KVShuttle Benchmark Design}
@@ -243,11 +241,11 @@ Based on this analysis, I provide actionable recommendations (Figure~\ref{fig:fl
 \section{Related Work}
 %===================================================================
 
-\textbf{KV cache compression.} KIVI~\cite{liu2024kivi} proposes asymmetric 2-bit quantization with per-channel keys and per-token values. KVQuant~\cite{hooper2024kvquant} uses non-uniform quantization with outlier handling. CacheGen~\cite{liu2024cachegen} applies delta encoding for streaming KV transfer. HACK~\cite{hack2025} performs homomorphic computation on quantized caches to avoid decompression. Each paper evaluates against 2--3 baselines under different conditions, making cross-method comparison impossible.
+\textbf{KV cache compression.} KIVI~\citep{liu2024kivi} proposes asymmetric 2-bit quantization with per-channel keys and per-token values. KVQuant~\citep{hooper2024kvquant} uses non-uniform quantization with outlier handling. CacheGen~\citep{liu2024cachegen} applies delta encoding for streaming KV transfer. HACK~\citep{hack2025} performs homomorphic computation on quantized caches to avoid decompression. Each paper evaluates against 2--3 baselines under different conditions, making cross-method comparison impossible.
 
-\textbf{Compression benchmarks.} ``What Must We Give in Return?''~\cite{yuan2024kvbenchmark} benchmarks 10+ methods but measures only quality, not transfer cost. KVPress~\cite{kvpress2025} evaluates 25+ token eviction methods for memory reduction---no transfer evaluation. ``Rethinking KV Cache Compression''~\cite{rethinking2025} critiques existing benchmarks for ignoring throughput under FlashAttention, but focuses on single-GPU serving, not disaggregated transfer.
+\textbf{Compression benchmarks.} ``What Must We Give in Return?''~\citep{yuan2024kvbenchmark} benchmarks 10+ methods but measures only quality, not transfer cost. KVPress~\citep{kvpress2025} evaluates 25+ token eviction methods for memory reduction---no transfer evaluation. ``Rethinking KV Cache Compression''~\citep{rethinking2025} critiques existing benchmarks for ignoring throughput under FlashAttention, but focuses on single-GPU serving, not disaggregated transfer.
 
-\textbf{Disaggregated serving.} DistServe~\cite{zhong2024distserve} and Splitwise~\cite{patel2024splitwise} establish the prefill/decode disaggregation paradigm but handle KV transfer via raw RDMA without compression. NVIDIA Dynamo integrates KV routing into production serving. None systematically evaluate compression for the transfer bottleneck.
+\textbf{Disaggregated serving.} DistServe~\citep{zhong2024distserve} and Splitwise~\citep{patel2024splitwise} establish the prefill/decode disaggregation paradigm but handle KV transfer via raw RDMA without compression. NVIDIA Dynamo integrates KV routing into production serving. None systematically evaluate compression for the transfer bottleneck.
 
 %===================================================================
 \section{Conclusion}
