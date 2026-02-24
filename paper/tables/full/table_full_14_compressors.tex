@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{All 14 compression strategies evaluated in KVShuttle. Ratio and cosine similarity are from the compression sweep on Llama-3.1-8B (50 prompts $\times$ 8 bandwidths). Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 5 models $\times$ 50 prompts each where available. --- indicates the compressor was not evaluated for generation quality.}
+\caption{All 14 compression strategies evaluated in KVShuttle. Ratio and cosine similarity are from the compression sweep on Llama-3.1-8B (50 prompts $\times$ 8 bandwidths). Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 6 models $\times$ 50 prompts each where available. --- indicates the compressor was not evaluated for generation quality.}
 \label{tab:full_compressors}
 \small
 \begin{tabular}{llccccc}
@@ -12,21 +12,21 @@
   lossless\_zstd & lossless & 1.1$\times$ & 1.0000 & 1.0000 & --- & --- \\
   lossless\_lz4 & lossless & 1.0$\times$ & 1.0000 & 1.0000 & --- & --- \\
 \midrule
-  uniform\_int8 & quantization & 2.0$\times$ & 0.9998 & 0.9998 & 0.972 & 0.03 \\
+  uniform\_int8 & quantization & 2.0$\times$ & 0.9998 & 0.9998 & 0.971 & 0.04 \\
   fp8\_e4m3 & quantization & 2.0$\times$ & 0.9926 & 0.9987 & --- & --- \\
-  uniform\_int4 & quantization & 3.6$\times$ & 0.9874 & 0.9935 & 0.593 & 13,294 \\
-  kivi\_2bit & quantization & 6.7$\times$ & 0.9587 & 0.8692 & 0.737 & 7.50 \\
+  uniform\_int4 & quantization & 3.6$\times$ & 0.9874 & 0.9935 & 0.656 & 11,079 \\
+  kivi\_2bit & quantization & 6.7$\times$ & 0.9587 & 0.8692 & 0.759 & 6.37 \\
   kvquant\_2bit & quantization & 7.6$\times$ & 0.6471 & 0.6554 & --- & --- \\
 \midrule
-  cachegen & structured & 3.6$\times$ & 0.9925 & 0.9858 & 0.925 & 0.81 \\
+  cachegen & structured & 3.6$\times$ & 0.9925 & 0.9858 & 0.934 & 0.70 \\
 \midrule
-  palu\_lr & low-rank & 2.5$\times$ & 0.9756 & 0.9611 & 0.667 & 24.13 \\
+  palu\_lr & low-rank & 2.5$\times$ & 0.9756 & 0.9611 & 0.683 & 20.57 \\
 \midrule
   topk\_prune\_50 & pruning & 2.0$\times$ & 0.7701 & 0.6979 & --- & --- \\
 \midrule
   mixed\_k8v4 & hybrid & 2.6$\times$ & 0.9998 & 0.9935 & --- & --- \\
   palu\_int4 & hybrid & 9.0$\times$ & 0.9581 & 0.9460 & --- & --- \\
-  cascade\_prune50\_int4 & hybrid & 7.1$\times$ & 0.7602 & 0.6933 & 0.332 & 17,982 \\
+  cascade\_prune50\_int4 & hybrid & 7.1$\times$ & 0.7602 & 0.6933 & 0.358 & 14,991 \\
 \bottomrule
 \end{tabular}
 \end{table*}

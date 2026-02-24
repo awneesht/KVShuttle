@@ -145,41 +145,41 @@
     "overall": {
       "cachegen": {
         "token_agreement": {
-          "estimate": 0.9251486558728006,
-          "ci_lower": 0.9179266153566688,
-          "ci_upper": 0.9320255989258228,
+          "estimate": 0.9338359672185564,
+          "ci_lower": 0.9272266289002398,
+          "ci_upper": 0.9401706672926188,
           "ci_level": 0.95
         },
         "perplexity_delta": {
-          "estimate": 0.8120169564090076,
-          "ci_lower": 0.11980389558392596,
-          "ci_upper": 1.4023238169644452,
+          "estimate": 0.695718561181101,
+          "ci_lower": 0.11692108592079878,
+          "ci_upper": 1.1918561709618616,
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 0.9913819520669797,
-          "ci_lower": 0.9912813971799044,
-          "ci_upper": 0.9914805036471094,
+          "estimate": 0.9912299885218026,
+          "ci_lower": 0.9911383354001503,
+          "ci_upper": 0.9913205836991055,
           "ci_level": 0.95
         }
       },
       "cascade_prune50_int4": {
         "token_agreement": {
-          "estimate": 0.3315019585853923,
-          "ci_lower": 0.2993809757045351,
-          "ci_upper": 0.3636214772905806,
+          "estimate": 0.3578823530326172,
+          "ci_lower": 0.32973903118672643,
+          "ci_upper": 0.3861351560087293,
           "ci_level": 0.95
         },
         "perplexity_delta": {
-          "estimate": 17982.189688694594,
-          "ci_lower": 13000.130474439105,
-          "ci_upper": 23711.84979552971,
+          "estimate": 14991.454086769605,
+          "ci_lower": 10700.70234773703,
+          "ci_upper": 19862.585227004685,
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 0.721228720204816,
-          "ci_lower": 0.7205889213523456,
-          "ci_upper": 0.7218996780641644,
+          "estimate": 0.7222938438122354,
+          "ci_lower": 0.7216730825637669,
+          "ci_upper": 0.7229379795494789,
           "ci_level": 0.95
         }
       },
@@ -197,95 +197,109 @@
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 1.0000000090078702,
-          "ci_lower": 1.0000000073023732,
-          "ci_upper": 1.0000000106969464,
+          "estimate": 1.0000000090637298,
+          "ci_lower": 1.000000007658925,
+          "ci_upper": 1.0000000105086533,
           "ci_level": 0.95
         }
       },
       "kivi_2bit": {
         "token_agreement": {
-          "estimate": 0.7366391274755634,
-          "ci_lower": 0.7257731166762212,
-          "ci_upper": 0.7471942730500831,
+          "estimate": 0.758836552471706,
+          "ci_lower": 0.7481481242923324,
+          "ci_upper": 0.7697486505541847,
           "ci_level": 0.95
         },
         "perplexity_delta": {
-          "estimate": 7.499437875208738,
-          "ci_lower": 5.710695466102075,
-          "ci_upper": 9.645856635958427,
+          "estimate": 6.370954234055852,
+          "ci_lower": 4.872003386995762,
+          "ci_upper": 8.229616089599043,
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 0.9464955755481644,
-          "ci_lower": 0.9458727364873957,
-          "ci_upper": 0.9471129153224921,
+          "estimate": 0.947646254331662,
+          "ci_lower": 0.9470310032338946,
+          "ci_upper": 0.9482521625992063,
           "ci_level": 0.95
         }
       },
       "palu_lr": {
         "token_agreement": {
-          "estimate": 0.6665367763593875,
-          "ci_lower": 0.6493409272921168,
-          "ci_upper": 0.6818943196784768,
+          "estimate": 0.6825482747621573,
+          "ci_lower": 0.6677079554805582,
+          "ci_upper": 0.6965306480061147,
           "ci_level": 0.95
         },
         "perplexity_delta": {
-          "estimate": 24.125447334058382,
-          "ci_lower": 16.832485363084835,
-          "ci_upper": 32.19248999892469,
+          "estimate": 20.573169113781272,
+          "ci_lower": 14.527269619612522,
+          "ci_upper": 27.396680065366183,
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 0.9578467289765203,
-          "ci_lower": 0.956679346684659,
-          "ci_upper": 0.9589664918045645,
+          "estimate": 0.9607701992085844,
+          "ci_lower": 0.9595290792134766,
+          "ci_upper": 0.9619904504713794,
           "ci_level": 0.95
         }
       },
       "uniform_int4": {
         "token_agreement": {
-          "estimate": 0.5932602409116562,
-          "ci_lower": 0.5411114916499711,
-          "ci_upper": 0.6455457911352288,
+          "estimate": 0.6560197840132271,
+          "ci_lower": 0.6088341539251879,
+          "ci_upper": 0.7029515714731044,
           "ci_level": 0.95
         },
         "perplexity_delta": {
-          "estimate": 13294.330971569974,
-          "ci_lower": 8225.916912612389,
-          "ci_upper": 19457.0047626391,
+          "estimate": 11078.615722548846,
+          "ci_lower": 6926.626698699081,
+          "ci_upper": 16299.55749968383,
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 0.9876962566426586,
-          "ci_lower": 0.9875385178330399,
-          "ci_upper": 0.9878590587665342,
+          "estimate": 0.9879672224092146,
+          "ci_lower": 0.9878154241115599,
+          "ci_upper": 0.9881160764662431,
           "ci_level": 0.95
         }
       },
       "uniform_int8": {
         "token_agreement": {
-          "estimate": 0.9722627652721212,
-          "ci_lower": 0.9686762175993779,
-          "ci_upper": 0.9757720032034265,
+          "estimate": 0.9713285177327204,
+          "ci_lower": 0.967949904112128,
+          "ci_upper": 0.9746094971472159,
           "ci_level": 0.95
         },
         "perplexity_delta": {
-          "estimate": 0.03329612012775449,
-          "ci_lower": -0.1377078215161874,
-          "ci_upper": 0.1630786427341132,
+          "estimate": 0.03789578670032351,
+          "ci_lower": -0.10507910589032003,
+          "ci_upper": 0.14628980670420572,
           "ci_level": 0.95
         },
         "key_cosine_sim": {
-          "estimate": 0.9997771820271063,
-          "ci_lower": 0.9997725913016361,
-          "ci_upper": 0.9997818004060154,
+          "estimate": 0.9997884700690747,
+          "ci_lower": 0.9997836738983052,
+          "ci_upper": 0.9997932749680101,
           "ci_level": 0.95
         }
       }
     },
     "per_model": {
       "cachegen": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 0.9772725239473354,
+            "ci_lower": 0.9700418281143814,
+            "ci_upper": 0.9841375707706551,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 0.11422658504156612,
+            "ci_lower": 0.023943768734367175,
+            "ci_upper": 0.24152973752923673,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 0.9622312426038334,
@@ -358,6 +372,20 @@
         }
       },
       "cascade_prune50_int4": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 0.4897843252687412,
+            "ci_lower": 0.4642107141683732,
+            "ci_upper": 0.5156460109357938,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 37.776077144677444,
+            "ci_lower": 28.318953363202507,
+            "ci_upper": 48.44072929236923,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 0.4126508882422891,
@@ -430,6 +458,20 @@
         }
       },
       "identity": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 1.0,
+            "ci_lower": 1.0,
+            "ci_upper": 1.0,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 0.0,
+            "ci_lower": 0.0,
+            "ci_upper": 0.0,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 1.0,
@@ -502,6 +544,20 @@
         }
       },
       "kivi_2bit": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 0.8698236774524202,
+            "ci_lower": 0.8545179456538263,
+            "ci_upper": 0.8844837805923386,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 0.7285360282914252,
+            "ci_lower": 0.5103199860339804,
+            "ci_upper": 0.9639194047914648,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 0.7661810361700404,
@@ -574,6 +630,20 @@
         }
       },
       "palu_lr": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 0.7626057667760071,
+            "ci_lower": 0.7403659820708149,
+            "ci_upper": 0.7841697563972008,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 2.811778012395751,
+            "ci_lower": 2.1046742218716377,
+            "ci_upper": 3.596966293369168,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 0.7201209760426458,
@@ -646,6 +716,20 @@
         }
       },
       "uniform_int4": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 0.9698174995210822,
+            "ci_lower": 0.9616329177603788,
+            "ci_upper": 0.9774532336802703,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 0.0394774432183794,
+            "ci_lower": -0.004669862902019488,
+            "ci_upper": 0.077901903746476,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 0.9511846675340287,
@@ -718,6 +802,20 @@
         }
       },
       "uniform_int8": {
+        "llama-3.1-70b": {
+          "token_agreement": {
+            "estimate": 0.9666572800357165,
+            "ci_lower": 0.9584263981575859,
+            "ci_upper": 0.9746695853099938,
+            "ci_level": 0.95
+          },
+          "perplexity_delta": {
+            "estimate": 0.06089411956316852,
+            "ci_lower": -0.012494050251073025,
+            "ci_upper": 0.13013589948620455,
+            "ci_level": 0.95
+          }
+        },
         "llama-3.1-8b": {
           "token_agreement": {
             "estimate": 0.9769246170900714,
@@ -942,14 +1040,14 @@
   },
   "correlation_analysis": {
     "cosine_vs_token_agreement": {
-      "coefficient": 0.8554503914206127,
+      "coefficient": 0.8525533988626478,
       "p_value": 0.0,
-      "n": 1750
+      "n": 2100
     },
     "cosine_vs_perplexity_delta": {
-      "coefficient": -0.686515249955647,
-      "p_value": 3.35990734320153e-244,
-      "n": 1750
+      "coefficient": -0.6910160614634624,
+      "p_value": 4.688208983162837e-298,
+      "n": 2100
     }
   },
   "compression_sweep_cis": {

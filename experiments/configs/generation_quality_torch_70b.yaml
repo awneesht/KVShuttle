@@ -24,8 +24,8 @@ bandwidths_gbps:
 prompts:
   source: wikitext
   count: 50
-  min_tokens: 128
-  max_tokens: 512
+  min_tokens: 64
+  max_tokens: 256
 
 evaluation:
   attention_error: true

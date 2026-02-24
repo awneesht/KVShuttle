@@ -10,6 +10,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
+import torch
 import yaml
 from tqdm import tqdm
 
@@ -140,6 +141,10 @@ def run_experiment(config_path: str) -> None:
         seq_lens = rng.integers(min_tokens, max_tokens + 1, size=prompt_count)
 
         for prompt_idx in tqdm(range(prompt_count), desc=f"{model_name}"):
+            # Free GPU cache between prompts to avoid OOM on large models
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+
             seq_len = int(seq_lens[prompt_idx])
             prompt_text = None
 
