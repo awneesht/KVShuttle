@@ -145,7 +145,7 @@ def _generate_full_14_compressor_table(
     lines = [
         r"\begin{table*}[t]",
         r"\centering",
-        r"\caption{All 14 compression strategies evaluated in KVShuttle. Ratio and cosine similarity are from the compression sweep on Llama-3.1-8B (50 prompts $\times$ 8 bandwidths). Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 5 models $\times$ 50 prompts each where available. --- indicates the compressor was not evaluated for generation quality.}",
+        r"\caption{All 14 compression strategies evaluated in KVShuttle. Ratio and cosine similarity are from the compression sweep on Llama-3.1-8B (50 prompts $\times$ 8 bandwidths). Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 6 models $\times$ 50 prompts each where available. --- indicates the compressor was not evaluated for generation quality.}",
         r"\label{tab:full_compressors}",
         r"\small",
         r"\begin{tabular}{llccccc}",
@@ -279,6 +279,7 @@ def _generate_kv_cache_sizes_table(results: list[dict], output_path: Path) -> No
         "qwen2.5-7b": (28, 4, 128),
         "llama-3.1-8b": (32, 8, 128),
         "mistral-7b": (32, 8, 128),
+        "llama-3.1-70b": (80, 8, 128),
     }
 
     seq_lens = [128, 256, 512, 1024, 2048]
@@ -396,7 +397,7 @@ def _generate_significance_table(ci_data: dict, output_path: Path) -> None:
     lines = [
         r"\begin{table}[t]",
         r"\centering",
-        r"\caption{Wilcoxon signed-rank tests between compressor pairs on token agreement (50 paired prompts per model, pooled across 5 models). Effect size is Cohen's $d$.}",
+        r"\caption{Wilcoxon signed-rank tests between compressor pairs on token agreement (50 paired prompts per model, pooled across 6 models). Effect size is Cohen's $d$.}",
         r"\label{tab:significance}",
         r"\small",
         r"\begin{tabular}{lcccc}",

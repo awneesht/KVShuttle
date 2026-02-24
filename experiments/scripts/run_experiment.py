@@ -118,7 +118,10 @@ def run_experiment(config_path: str) -> None:
                 from kvshuttle.models.loader_torch import load_model_torch
                 from kvshuttle.models.kv_extractor_torch import extract_kv_cache_torch
 
-                model, tokenizer, model_info = load_model_torch(model_name)
+                model, tokenizer, model_info = load_model_torch(
+                    model_name,
+                    load_in_4bit=config.get("load_in_4bit", False),
+                )
                 _extract_kv_cache = extract_kv_cache_torch
             else:
                 from kvshuttle.models.loader import load_model
@@ -305,6 +308,7 @@ _MODEL_KV_SHAPES = {
     "qwen2.5-7b": (28, 4, 128),
     "llama-3.1-8b": (32, 8, 128),
     "mistral-7b": (32, 8, 128),
+    "llama-3.1-70b": (80, 8, 128),
 }
 
 

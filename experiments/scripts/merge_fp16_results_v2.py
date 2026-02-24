@@ -4,6 +4,7 @@ Updated version that includes:
   - Original 5 models (from merge_fp16_results.py)
   - Experiment 1: Llama-3.2-3B (fills last model gap)
   - Experiment 3: 7 missing compressors on Llama-3.1-8B + Qwen2.5-3B
+  - Experiment 4: Llama-3.1-70B (extends range to 70B)
 """
 
 from __future__ import annotations
@@ -26,12 +27,14 @@ ORIGINAL_SOURCES = {
     RESULTS_DIR / "generation_quality_fp16_7b" / "results.json": ["mistral-7b", "qwen2.5-7b"],
 }
 
-# New sources from experiments 1 and 3
+# New sources from experiments 1, 3, and 4
 NEW_SOURCES = {
     # Experiment 1: Llama-3.2-3B generation quality
     RESULTS_DIR / "generation_quality_fp16_llama32" / "results.json": None,  # None = keep all models
     # Experiment 3: 7 missing compressors
     RESULTS_DIR / "generation_quality_fp16_missing7" / "results.json": None,
+    # Experiment 4: Llama-3.1-70B generation quality (4-bit model, FP16 KV cache)
+    RESULTS_DIR / "generation_quality_fp16_70b" / "results.json": None,
 }
 
 OUTPUT = RESULTS_DIR / "generation_quality_fp16_merged" / "results.json"

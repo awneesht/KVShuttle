@@ -15,6 +15,7 @@ MODEL_REGISTRY: dict[str, str] = {
     "qwen2.5-7b": "mlx-community/Qwen2.5-7B-Instruct-4bit",
     "llama-3.1-8b": "mlx-community/Meta-Llama-3.1-8B-Instruct-4bit",
     "mistral-7b": "mlx-community/Mistral-7B-Instruct-v0.3-4bit",
+    "llama-3.1-70b": "mlx-community/Meta-Llama-3.1-70B-Instruct-4bit",
 }
 
 

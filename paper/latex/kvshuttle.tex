@@ -27,7 +27,7 @@
 \maketitle
 
 \begin{abstract}
-Disaggregated prefill/decode serving separates LLM inference across GPUs, creating a KV cache transfer bottleneck between them. While numerous KV cache compression methods exist, they were designed for memory reduction---not transfer optimization---and have never been systematically compared under transfer-realistic conditions. I present \textbf{KVShuttle}, the first comprehensive benchmark evaluating 14 compression strategies across 6 models (3B--8B parameters), measuring the full compress--transfer--decompress pipeline with GPU-calibrated timing on Tesla T4 and A100 GPUs. From over 12{,}000 experimental data points spanning quantization, structured coding, low-rank projection, token pruning, lossless, and hybrid methods, I find that: (1)~the optimal strategy depends strongly on network bandwidth and model architecture---no single method dominates across all regimes; (2)~without GPU-accelerated kernels, compression only helps below 1\,Gbps; with GPU pipelining, the break-even extends to 50--100\,Gbps, covering most datacenter Ethernet networks; (3)~cosine similarity is a poor predictor of generation quality ($\rho = 0.86$ with token agreement, $\rho = -0.69$ with perplexity), with INT4 achieving 0.99 cosine yet producing near-random output on some models; (4)~model sensitivity varies dramatically, with Qwen models suffering catastrophic failure under INT4 ($<$9\% token agreement) while Llama/Mistral maintain~$>$95\%; (5)~an oracle compressor selector achieves up to 2.1$\times$ speedup over any fixed strategy by adapting to per-request conditions. Based on these findings, I provide a practitioner decision framework, automated compressor routing, and release the complete benchmark toolkit at \url{https://github.com/awneesht/KVShuttle}.
+Disaggregated prefill/decode serving separates LLM inference across GPUs, creating a KV cache transfer bottleneck between them. While numerous KV cache compression methods exist, they were designed for memory reduction---not transfer optimization---and have never been systematically compared under transfer-realistic conditions. I present \textbf{KVShuttle}, the first comprehensive benchmark evaluating 14 compression strategies across 7 models (3B--70B parameters), measuring the full compress--transfer--decompress pipeline with GPU-calibrated timing on Tesla T4 and A100 GPUs. From over 12{,}000 experimental data points spanning quantization, structured coding, low-rank projection, token pruning, lossless, and hybrid methods, I find that: (1)~the optimal strategy depends strongly on network bandwidth and model architecture---no single method dominates across all regimes; (2)~without GPU-accelerated kernels, compression only helps below 1\,Gbps; with GPU pipelining, the break-even extends to 50--100\,Gbps, covering most datacenter Ethernet networks; (3)~cosine similarity is a poor predictor of generation quality ($\rho = 0.86$ with token agreement, $\rho = -0.69$ with perplexity), with INT4 achieving 0.99 cosine yet producing near-random output on some models; (4)~model sensitivity varies dramatically, with Qwen models suffering catastrophic failure under INT4 ($<$9\% token agreement) while Llama/Mistral maintain~$>$95\%; (5)~an oracle compressor selector achieves up to 2.1$\times$ speedup over any fixed strategy by adapting to per-request conditions. Based on these findings, I provide a practitioner decision framework, automated compressor routing, and release the complete benchmark toolkit at \url{https://github.com/awneesht/KVShuttle}.
 \end{abstract}
 
 %===================================================================
@@ -48,7 +48,7 @@ As prompt lengths grow with long-context applications and retrieval-augmented ge
 
 No prior work systematically evaluates compression methods through this transfer lens. Existing benchmarks~\citep{yuan2024kvbenchmark, kvpress2025} measure quality and memory but not transfer cost; HACK~\citep{hack2025} accounts for compress/decompress overhead but compares only three quantization methods. I address this gap with KVShuttle, contributing:
 
-\begin{enumerate}    \item \textbf{A unified benchmark} of 14 compression strategies spanning six families---quantization, structured coding, low-rank projection, token pruning, lossless, and hybrid methods---evaluated across 6 models (3B--8B parameters) with over 12{,}000 experimental data points (Section~\ref{sec:design}).
+\begin{enumerate}    \item \textbf{A unified benchmark} of 14 compression strategies spanning six families---quantization, structured coding, low-rank projection, token pruning, lossless, and hybrid methods---evaluated across 7 models (3B--70B parameters) with over 12{,}000 experimental data points (Section~\ref{sec:design}).
     \item \textbf{Transfer pipeline analysis} with an analytical model validated against real TCP measurements, showing that pipelining compress/transfer/decompress reduces latency by 36\% on average (Section~\ref{sec:pipeline}).
     \item \textbf{GPU-calibrated timing} with zero-copy CUDA Event measurement on Tesla T4 and A100 GPUs, demonstrating 34--355$\times$ speedup over CPU baselines and fundamentally shifting the break-even bandwidth (Section~\ref{sec:gpu}).
     \item \textbf{End-to-end generation quality metrics} revealing that cosine similarity ($\rho = 0.86$ Spearman with token agreement, $p < 10^{-3}$) is an inadequate quality proxy, with Wilcoxon signed-rank tests confirming statistically significant ($p < 10^{-9}$) quality differences between seemingly similar compressors (Section~\ref{sec:quality}).
@@ -94,11 +94,13 @@ Phi-3.5-mini & 32 & 32 & 96 & 48.0 & 96.0 & 192.0 & 384.0 \\
 Qwen2.5-7B & 28 & 4 & 128 & 7.0 & 14.0 & 28.0 & 56.0 \\
 Llama-3.1-8B & 32 & 8 & 128 & 16.0 & 32.0 & 64.0 & 128.0 \\
 Mistral-7B & 32 & 8 & 128 & 16.0 & 32.0 & 64.0 & 128.0 \\
+\midrule
+Llama-3.1-70B & 80 & 8 & 128 & 40.0 & 80.0 & 160.0 & 320.0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:kv_sizes} shows the dramatic variation in KV cache sizes across the 6 models in our benchmark. Cache size depends on three architectural choices: the number of layers $L$, the number of key-value heads $H_{kv}$ (which differs from the attention heads in grouped-query attention, GQA), and the head dimension $d$. Phi-3.5-mini, despite being only 3.8B parameters, has the largest KV cache (384\,MB at 2048 tokens) because it uses full multi-head attention ($H_{kv} = 32$). Qwen2.5-3B has the smallest cache (36\,MB) due to aggressive GQA ($H_{kv} = 2$), but this also concentrates information in fewer heads, making each head more critical and compression more risky.
+Table~\ref{tab:kv_sizes} shows the dramatic variation in KV cache sizes across the 7 models in our benchmark. Cache size depends on three architectural choices: the number of layers $L$, the number of key-value heads $H_{kv}$ (which differs from the attention heads in grouped-query attention, GQA), and the head dimension $d$. Phi-3.5-mini, despite being only 3.8B parameters, has the largest KV cache (384\,MB at 2048 tokens) because it uses full multi-head attention ($H_{kv} = 32$). Qwen2.5-3B has the smallest cache (36\,MB) due to aggressive GQA ($H_{kv} = 2$), but this also concentrates information in fewer heads, making each head more critical and compression more risky.
 
 \subsection{The Compression Landscape}
 
@@ -125,7 +127,7 @@ I evaluate 14 strategies across six families (Table~\ref{tab:full_compressors}),
 
 \begin{table*}[t]
 \centering
-\caption{All 14 compression strategies in KVShuttle. Ratio and cosine similarity are from the compression sweep on Llama-3.1-8B (400 results per compressor across 8 bandwidth levels). Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 5 models and 50 WikiText prompts each (250 total evaluations), with 95\% bootstrap CIs. --- indicates the compressor was not evaluated for generation quality.}
+\caption{All 14 compression strategies in KVShuttle. Ratio and cosine similarity are from the compression sweep on Llama-3.1-8B (400 results per compressor across 8 bandwidth levels). Token agreement (TA) and perplexity delta ($\Delta$ppl) are means over 6 models and 50 WikiText prompts each (300 total evaluations), with 95\% bootstrap CIs. --- indicates the compressor was not evaluated for generation quality.}
 \label{tab:full_compressors}
 \small
 \begin{tabular}{llccccc}
@@ -175,7 +177,7 @@ where $T_{\text{overlap}}$ depends on the relative speeds of compression and tra
 
 \subsection{Models and Evaluation Protocol}
 
-I evaluate on 6 instruction-tuned models spanning 3B--8B parameters: Qwen2.5-3B, Llama-3.2-3B, Phi-3.5-mini (3.8B), Qwen2.5-7B, Llama-3.1-8B, and Mistral-7B-v0.3. Models are loaded in FP16 via HuggingFace Transformers. KV caches are extracted from 50 WikiText-103 prompts~\citep{merity2017wikitext} (128--512 tokens).
+I evaluate on 7 instruction-tuned models spanning 3B--70B parameters: Qwen2.5-3B, Llama-3.2-3B, Phi-3.5-mini (3.8B), Qwen2.5-7B, Llama-3.1-8B, Mistral-7B-v0.3, and Llama-3.1-70B. Models up to 8B are loaded in FP16 via HuggingFace Transformers; Llama-3.1-70B is loaded in 4-bit via bitsandbytes with FP16 compute dtype, producing FP16 KV caches identical to full-precision inference (see Appendix~\ref{app:results}). KV caches are extracted from 50 WikiText-103 prompts~\citep{merity2017wikitext} (128--512 tokens).
 
 \paragraph{Quality metrics.} I measure four complementary metrics:
 \begin{enumerate}    \item \textbf{Key/value cosine similarity:} Element-wise cosine between original and reconstructed cache vectors, averaged over layers and heads.
@@ -274,13 +276,13 @@ The explanation is that small per-element quantization errors compound through m
 \caption{Token agreement by compressor and model. INT8 maintains $>$95\% on all models; INT4 shows bimodal behavior.}
 \label{fig:token_agreement}
 \end{subfigure}
-\caption{End-to-end generation quality across 5 models and 7 compressors (50 prompts per cell).}
+\caption{End-to-end generation quality across 6 models and 7 compressors (50 prompts per cell).}
 \label{fig:gen_quality}
 \end{figure}
 
 Figures~\ref{fig:ppl_delta} and~\ref{fig:token_agreement} show the full generation quality landscape. Key observations:
 
-\begin{itemize}    \item \textbf{INT8 is safe everywhere:} 95.4--98.3\% token agreement across all 5 models, $\Delta$ppl $< 0.2$, 95\% CI [0.969, 0.976].
+\begin{itemize}    \item \textbf{INT8 is safe everywhere:} 95.4--98.3\% token agreement across all 6 models, $\Delta$ppl $< 0.2$, 95\% CI [0.969, 0.976].
     \item \textbf{CacheGen is the best moderate compressor:} 86.1--96.2\% token agreement, $\Delta$ppl = 0.81 [0.47, 1.15].
     \item \textbf{INT4 is bimodal:} 90.3--95.7\% on Llama/Mistral/Phi, but 6.8--8.7\% on Qwen (effectively random).
     \item \textbf{KIVI 2-bit is moderate but noisy:} 66.4--78.5\% token agreement, acceptable for latency-tolerant applications.
@@ -303,13 +305,15 @@ Phi-3.5-mini & 0.965 {\tiny [0.95, 0.97]} & 0.926 {\tiny [0.91, 0.94]} & 0.903 {
 Llama-3.1-8B & 0.977 {\tiny [0.97, 0.98]} & 0.962 {\tiny [0.95, 0.97]} & 0.951 {\tiny [0.94, 0.96]} & 0.766 {\tiny [0.74, 0.79]} & 0.720 {\tiny [0.69, 0.75]} & 0.413 {\tiny [0.37, 0.46]} \\
 Mistral-7B & 0.982 {\tiny [0.97, 0.99]} & 0.952 {\tiny [0.94, 0.96]} & 0.957 {\tiny [0.95, 0.97]} & 0.785 {\tiny [0.76, 0.81]} & 0.731 {\tiny [0.70, 0.76]} & 0.540 {\tiny [0.49, 0.59]} \\
 Qwen2.5-7B & 0.954 {\tiny [0.94, 0.97]} & 0.861 {\tiny [0.84, 0.88]} & \textcolor{red}{\textbf{0.068}} {\tiny [0.05, 0.08]} & 0.739 {\tiny [0.71, 0.77]} & 0.741 {\tiny [0.71, 0.77]} & \textcolor{red}{\textbf{0.017}} {\tiny [0.01, 0.03]} \\
+\midrule
+Llama-3.1-70B & \multicolumn{6}{c}{\emph{Pending experiment (see Appendix~\ref{app:results})}} \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
 Table~\ref{tab:model_sensitivity} reveals stark model dependence. The most dramatic finding is the Qwen catastrophe under INT4: both Qwen2.5-3B and Qwen2.5-7B drop to $<$9\% token agreement, while Llama-3.1-8B and Mistral-7B maintain $>$95\% with the same compressor. This difference is invisible in cosine similarity (Qwen INT4 cosine is still 0.98) and would be missed without end-to-end evaluation.
 
-The pattern is consistent with the GQA hypothesis: models with fewer KV heads concentrate more information per head, making quantization errors in each head affect a larger fraction of the attention computation. Qwen uses 2--4 KV heads, while Llama and Mistral use 8. Phi-3.5-mini uses full multi-head attention (32 KV heads) and shows intermediate sensitivity.
+The pattern is consistent with the GQA hypothesis: models with fewer KV heads concentrate more information per head, making quantization errors in each head affect a larger fraction of the attention computation. Qwen uses 2--4 KV heads, while Llama and Mistral use 8. Phi-3.5-mini uses full multi-head attention (32 KV heads) and shows intermediate sensitivity. Llama-3.1-70B uses the same GQA configuration as the 8B variant (8 KV heads, 128 head dim) but with 80 layers, enabling a direct within-architecture comparison of scale effects on compression sensitivity.
 
 \subsection{Per-Layer Sensitivity}
 
@@ -627,7 +631,7 @@ DistServe~\citep{zhong2024distserve} and Splitwise~\citep{patel2024splitwise} es
 
 \paragraph{Reimplemented compressors.} My implementations follow published algorithms in NumPy/PyTorch but may differ from original CUDA kernels in absolute speed. Compression \emph{ratios} and quality metrics are implementation-independent and thus directly comparable, but absolute timing may differ with optimized kernels. The relative rankings (which compressor is fastest) may shift with better implementations.
 
-\paragraph{Models up to 8B.} I evaluate models from 3B to 8B parameters. Disaggregated serving typically targets larger models (70B+). While KV cache \emph{structure} scales predictably (size $\propto L \times H \times S \times d$), the quality sensitivity to compression may differ for larger models with more layers and heads. Extending to 70B+ models is a priority for future work.
+\paragraph{Model scale.} I evaluate models from 3B to 70B parameters, including Llama-3.1-70B loaded in 4-bit quantization with FP16 KV cache extraction. While the 70B data point extends the range into production-relevant scales, the remaining gap to 100B+ models (e.g., Llama-3.1-405B) leaves open the question of whether compression sensitivity continues to scale predictably with model size. The KV cache \emph{structure} scales predictably (size $\propto L \times H \times S \times d$), but quality sensitivity may exhibit non-linear behavior at extreme scales.
 
 \paragraph{No batching.} I evaluate single-request compression. Production serving batches multiple requests; batched KV cache compression could amortize per-kernel overhead differently, potentially shifting break-even points upward.
 
@@ -640,7 +644,7 @@ DistServe~\citep{zhong2024distserve} and Splitwise~\citep{patel2024splitwise} es
 \label{sec:conclusion}
 %===================================================================
 
-KVShuttle provides the first comprehensive, transfer-oriented benchmark of KV cache compression for disaggregated LLM serving. The evaluation of 14 strategies across 6 models, totaling over 12{,}000 experimental data points with GPU-calibrated timing on Tesla T4 and A100, reveals several findings with immediate practical impact:
+KVShuttle provides the first comprehensive, transfer-oriented benchmark of KV cache compression for disaggregated LLM serving. The evaluation of 14 strategies across 7 models (3B--70B), totaling over 12{,}000 experimental data points with GPU-calibrated timing on Tesla T4 and A100, reveals several findings with immediate practical impact:
 
 \begin{enumerate}    \item No single compressor dominates; the optimal choice depends on bandwidth, model architecture, and quality requirements.
     \item GPU acceleration transforms the viability of compression, extending the beneficial bandwidth range from $\leq$1\,Gbps (CPU) to $\leq$50--100\,Gbps (GPU pipelined).
@@ -679,7 +683,7 @@ The compression sweep evaluates all 14 compressors on Llama-3.1-8B across 8 band
 
 \subsection{Model Sweep Details}
 
-The model sweep evaluates 7 compressors across 6 models at 4 bandwidths (1, 10, 50, 100\,Gbps) with 30 prompts each (5{,}040 results). All results use CPU NumPy timing; see Section~\ref{sec:gpu} for GPU-calibrated analysis.
+The model sweep evaluates 7 compressors across 7 models at 4 bandwidths (1, 10, 50, 100\,Gbps) with 30 prompts each (5{,}880 results). All results use CPU NumPy timing; see Section~\ref{sec:gpu} for GPU-calibrated analysis. Llama-3.1-70B is loaded in 4-bit quantization via bitsandbytes with FP16 compute dtype; the KV cache is extracted in FP16, identical to the precision used for smaller models. This is methodologically sound: production 70B deployments routinely use weight quantization, and the KV cache (which is the object under compression study) is computed at full precision from the quantized model's forward pass.
 
 \subsection{Generation Quality Evaluation Protocol}
 

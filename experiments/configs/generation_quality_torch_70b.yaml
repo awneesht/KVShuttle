@@ -1,0 +1,37 @@
+# Llama-3.1-70B generation quality on A100 (40GB) with 4-bit loading
+experiment:
+  name: generation_quality_fp16_70b
+  description: "Llama-3.1-70B generation quality with 4-bit model loading on A100"
+
+backend: torch
+load_in_4bit: true
+
+models:
+  - llama-3.1-70b
+
+compressors:
+  - identity
+  - uniform_int8
+  - uniform_int4
+  - kivi_2bit
+  - cachegen
+  - palu_lr
+  - cascade_prune50_int4
+
+bandwidths_gbps:
+  - 10
+
+prompts:
+  source: wikitext
+  count: 50
+  min_tokens: 128
+  max_tokens: 512
+
+evaluation:
+  attention_error: true
+  perplexity: true
+  token_agreement: true
+
+output:
+  dir: experiments/results/generation_quality_fp16_70b
+  save_per_layer: false

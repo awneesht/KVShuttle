@@ -19,6 +19,7 @@ TORCH_MODEL_REGISTRY: dict[str, str] = {
     "qwen2.5-7b": "Qwen/Qwen2.5-7B-Instruct",
     "llama-3.1-8b": "meta-llama/Llama-3.1-8B-Instruct",
     "mistral-7b": "mistralai/Mistral-7B-Instruct-v0.3",
+    "llama-3.1-70b": "meta-llama/Llama-3.1-70B-Instruct",
 }
 
 
@@ -26,6 +27,7 @@ def load_model_torch(
     model_name: str,
     dtype: torch.dtype = torch.float16,
     device: str = "auto",
+    load_in_4bit: bool = False,
 ) -> tuple:
     """Load a model and tokenizer via HuggingFace Transformers.
 
@@ -33,18 +35,30 @@ def load_model_torch(
         model_name: Short name from TORCH_MODEL_REGISTRY or a full HuggingFace model ID.
         dtype: Torch dtype for model weights (default: float16).
         device: Device map string for accelerate (default: "auto").
+        load_in_4bit: If True, load with bitsandbytes 4-bit quantization.
+            KV cache is still extracted in FP16 (the compute dtype).
 
     Returns:
         Tuple of (model, tokenizer, model_info).
     """
     hf_id = TORCH_MODEL_REGISTRY.get(model_name, model_name)
-    logger.info("Loading model %s (%s) with dtype=%s...", model_name, hf_id, dtype)
+    logger.info("Loading model %s (%s) with dtype=%s, 4bit=%s...", model_name, hf_id, dtype, load_in_4bit)
 
-    model = AutoModelForCausalLM.from_pretrained(
-        hf_id,
-        dtype=dtype,
-        device_map=device,
-    )
+    load_kwargs: dict = {
+        "device_map": device,
+    }
+
+    if load_in_4bit:
+        from transformers import BitsAndBytesConfig
+
+        load_kwargs["quantization_config"] = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=dtype,
+        )
+    else:
+        load_kwargs["torch_dtype"] = dtype
+
+    model = AutoModelForCausalLM.from_pretrained(hf_id, **load_kwargs)
     model.eval()
 
     tokenizer = AutoTokenizer.from_pretrained(hf_id)
