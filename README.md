@@ -1,5 +1,7 @@
 # KVShuttle
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18764713.svg)](https://doi.org/10.5281/zenodo.18764713)
+
 Benchmark and decision framework for KV cache transfer compression in disaggregated LLM serving.
 
 KVShuttle evaluates 14+ compression strategies across multiple models and sequence lengths, providing GPU-calibrated timing data and analytical transfer simulation to help practitioners choose the right compression scheme for their bandwidth regime.
@@ -31,7 +33,7 @@ KVShuttle evaluates 14+ compression strategies across multiple models and sequen
 - **Serving framework integration** — reference vLLM adapter (`KVShuttleConnector`) for disaggregated prefill/decode
 - **Analytical transfer simulation** — models sequential and pipelined transfer at configurable bandwidths
 - **Break-even analysis** — identifies the maximum bandwidth at which each strategy is beneficial
-- **Multi-model sweep** — benchmarks across 6 model architectures (Qwen2.5-3B through Llama-3.1-8B)
+- **Multi-model sweep** — benchmarks across 7 model architectures (Qwen2.5-3B through Llama-3.1-70B)
 - **Learned router** — trains a lightweight classifier to select the best compressor per-request
 
 ## Project Structure
