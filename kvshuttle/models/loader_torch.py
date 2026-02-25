@@ -42,7 +42,9 @@ def load_model_torch(
         Tuple of (model, tokenizer, model_info).
     """
     hf_id = TORCH_MODEL_REGISTRY.get(model_name, model_name)
-    logger.info("Loading model %s (%s) with dtype=%s, 4bit=%s...", model_name, hf_id, dtype, load_in_4bit)
+    logger.info(
+        "Loading model %s (%s) dtype=%s 4bit=%s...", model_name, hf_id, dtype, load_in_4bit
+    )
 
     load_kwargs: dict = {
         "device_map": device,

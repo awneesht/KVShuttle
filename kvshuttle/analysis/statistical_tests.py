@@ -51,7 +51,14 @@ class HypothesisTestResult:
         return self.p_value < 0.01
 
     def __repr__(self) -> str:
-        sig = "***" if self.p_value < 0.001 else "**" if self.p_value < 0.01 else "*" if self.p_value < 0.05 else "ns"
+        if self.p_value < 0.001:
+            sig = "***"
+        elif self.p_value < 0.01:
+            sig = "**"
+        elif self.p_value < 0.05:
+            sig = "*"
+        else:
+            sig = "ns"
         s = f"{self.test_name}: stat={self.statistic:.4f}, p={self.p_value:.4g} {sig}"
         if self.effect_size is not None:
             s += f", d={self.effect_size:.3f}"
